@@ -49,6 +49,8 @@ func main() {
 
 	tile_textures := rendering.LoadTileTextures()
 	character_textures := rendering.LoadCharacterTextures()
+	font := rendering.LoadFont()
+	rendering.LoadGUIStylesheet()
 
 	var gameState *game.GameState
 
@@ -63,9 +65,9 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawText("Main Menu", state.RES.X/2-70, state.RES.Y/6, 48, rl.RayWhite)
-			start := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y) / 2.0, Width: 100.0, Height: 50.0}, "Start")
-			exit := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y)/2.0 + 100.0, Width: 100.0, Height: 50.0}, "Quit")
+			rl.DrawTextEx(font, "Main Menu", rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, 1.0, rl.RayWhite)
+			start := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y) / 2.0, Width: 100.0, Height: 25.0}, "Start")
+			exit := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y)/2.0 + 100.0, Width: 100.0, Height: 25.0}, "Quit")
 
 			rl.EndDrawing()
 			if start {
@@ -88,7 +90,7 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawText("Paused", state.RES.X/2-70, state.RES.Y/6, 48, rl.RayWhite)
+			rl.DrawTextEx(font, "Paused", rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, 1.0, rl.RayWhite)
 
 			rl.EndDrawing()
 		case utils.IN_GAME:
