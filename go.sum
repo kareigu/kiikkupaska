@@ -1,3 +1,6 @@
+github.com/gen2brain/raylib-go/raygui v0.0.0-20210906160657-aabc97d1c242 h1:vIBTHNdRJO+pNK9YIsgrgyjilVAEqFVr61v4oSThOpg=
+github.com/gen2brain/raylib-go/raygui v0.0.0-20210906160657-aabc97d1c242/go.mod h1:9c2DHRs870gUiHZJaFxZZORqxnndSfxHr42NrEJU4dw=
+github.com/gen2brain/raylib-go/raylib v0.0.0-20210714145135-ccae99cbf6dd/go.mod h1:+NbsqGlEQqGqrsgJFF5Yj2dkvn0ML2SQb8RqM2hJsPU=
 github.com/gen2brain/raylib-go/raylib v0.0.0-20210905161606-6acb55e3e6d3 h1:TXsMHEvrxwQPuWFFW6S2XCg8uyRRuiq5SA0sjoxWXkY=
 github.com/gen2brain/raylib-go/raylib v0.0.0-20210905161606-6acb55e3e6d3/go.mod h1:+NbsqGlEQqGqrsgJFF5Yj2dkvn0ML2SQb8RqM2hJsPU=
 github.com/ojrac/opensimplex-go v1.0.2 h1:l4vs0D+JCakcu5OV0kJ99oEaWJfggSc9jiLpxaWvSzs=

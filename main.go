@@ -10,6 +10,7 @@ import (
 	"rendering"
 	"utils"
 
+	rgui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -62,9 +63,18 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawText("Main Menu", state.RES.X/2, state.RES.Y/2, 48, rl.RayWhite)
+			rl.DrawText("Main Menu", state.RES.X/2-70, state.RES.Y/6, 48, rl.RayWhite)
+			start := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y) / 2.0, Width: 100.0, Height: 50.0}, "Start")
+			exit := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y)/2.0 + 100.0, Width: 100.0, Height: 50.0}, "Quit")
 
 			rl.EndDrawing()
+			if start {
+				state.View = utils.IN_GAME
+			}
+			if exit {
+				cleanup(&tile_textures, &character_textures)
+				rl.CloseWindow()
+			}
 		case utils.PAUSED:
 			if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeyM) {
 				state.View = utils.IN_GAME
@@ -78,7 +88,7 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawText("Paused", state.RES.X/2, state.RES.Y/3, 48, rl.RayWhite)
+			rl.DrawText("Paused", state.RES.X/2-70, state.RES.Y/6, 48, rl.RayWhite)
 
 			rl.EndDrawing()
 		case utils.IN_GAME:
@@ -86,12 +96,16 @@ func main() {
 		}
 	}
 
-	for _, t := range tile_textures {
-		rl.UnloadTexture(t)
-	}
-	for _, t := range character_textures {
-		rl.UnloadTexture(t)
-	}
+	cleanup(&tile_textures, &character_textures)
 
 	rl.CloseWindow()
+}
+
+func cleanup(tile_textures *[]rl.Texture2D, character_textures *[]rl.Texture2D) {
+	for _, t := range *tile_textures {
+		rl.UnloadTexture(t)
+	}
+	for _, t := range *character_textures {
+		rl.UnloadTexture(t)
+	}
 }
