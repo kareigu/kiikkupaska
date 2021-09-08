@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -14,8 +15,8 @@ import (
 )
 
 const TILE_SIZE int32 = 32
-const PLAYER_OFFSET_X int32 = 5
-const PLAYER_OFFSET_Y int32 = -2
+const PLAYER_OFFSET_X int32 = 0
+const PLAYER_OFFSET_Y int32 = 0
 
 var RES_X int32 = 800
 var RES_Y int32 = 600
@@ -26,9 +27,9 @@ type IVector2 struct {
 }
 
 type Tile struct {
-	Colour rl.Color
-	Pos    IVector2
-	Block  bool
+	Texture rl.Texture2D
+	Pos     IVector2
+	Block   bool
 }
 
 const mapstring string = `mapstring
@@ -63,50 +64,66 @@ func randColour() rl.Color {
 	}
 }
 
-func charToTile(c string, pos IVector2) Tile {
+func charToTile(texturelist *[]rl.Texture2D, c string, pos IVector2) Tile {
 	switch c {
-	case "-":
-		return Tile{
-			Colour: rl.Black,
-			Pos:    pos,
-			Block:  false,
-		}
 	case "@":
 		return Tile{
-			Colour: rl.DarkGray,
-			Pos:    pos,
-			Block:  true,
+			Texture: (*texturelist)[2],
+			Pos:     pos,
+			Block:   true,
+		}
+	case "_":
+		ti := 1
+		if rand.Float32() < 0.01 {
+			ti = 6
+		}
+		return Tile{
+			Texture: (*texturelist)[ti],
+			Pos:     pos,
+			Block:   false,
 		}
 	case "!":
 		return Tile{
-			Colour: rl.DarkGreen,
-			Pos:    pos,
-			Block:  true,
+			Texture: (*texturelist)[3],
+			Pos:     pos,
+			Block:   true,
 		}
-	case "b":
+	case "P":
 		return Tile{
-			Colour: rl.Red,
-			Pos:    pos,
-			Block:  false,
+			Texture: (*texturelist)[4],
+			Pos:     pos,
+			Block:   false,
 		}
-	case "_":
+	case "-":
 		return Tile{
-			Colour: rl.Gray,
-			Pos:    pos,
-			Block:  false,
+			Texture: (*texturelist)[5],
+			Pos:     pos,
+			Block:   false,
 		}
 	default:
 		return Tile{
-			Colour: rl.Blue,
-			Pos:    pos,
-			Block:  false,
+			Texture: (*texturelist)[0],
+			Pos:     pos,
+			Block:   false,
 		}
 	}
 }
 
+func LoadTileTextures(texturelist *[]rl.Texture2D) {
+	*texturelist = make([]rl.Texture2D, 7)
+	(*texturelist)[0] = rl.LoadTexture("missing_tile.png")
+	(*texturelist)[1] = rl.LoadTexture("floor_stone_tile.png")
+	(*texturelist)[2] = rl.LoadTexture("wall_stone_tile.png")
+	(*texturelist)[3] = rl.LoadTexture("wall_moss_tile.png")
+	(*texturelist)[4] = rl.LoadTexture("floor_spawn_tile.png")
+	(*texturelist)[5] = rl.LoadTexture("floor_obs_tile.png")
+	(*texturelist)[6] = rl.LoadTexture("floor_stone_tile_bl.png")
+}
+
 type Player struct {
-	Pos    IVector2
-	Sprite string
+	Pos        IVector2
+	Sprite     rl.Texture2D
+	Visibility int8
 }
 
 func movePlayer(player *Player, tiles *map[IVector2]Tile, key int32) {
@@ -140,8 +157,6 @@ func movePlayer(player *Player, tiles *map[IVector2]Tile, key int32) {
 	player.Pos.Y = p_y
 }
 
-var noisemapstring string = ""
-
 func init() {
 	if len(os.Args) > 1 {
 		args := os.Args[1:]
@@ -160,8 +175,12 @@ func init() {
 	}
 }
 
+var noisemapstring string = ""
+
 func init() {
-	source := rand.NewSource(time.Now().UnixMilli())
+	t := time.Now()
+	log.Println("Map generation started")
+	source := rand.NewSource(t.UnixMilli())
 	rng := rand.New(source)
 	noise := simplex.New(rng.Int63())
 	var gen_i float64 = 0.0
@@ -194,11 +213,17 @@ func init() {
 		gen_j = 0.0
 		gen_i += 0.1
 	}
+
+	log.Println("Map generation finished in ", time.Since(t))
 }
+
+var tile_textures []rl.Texture2D
 
 func main() {
 	rl.InitWindow(RES_X, RES_Y, "go-raylib")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
+
+	LoadTileTextures(&tile_textures)
 
 	cam := rl.Camera2D{
 		Offset: rl.Vector2{
@@ -214,8 +239,9 @@ func main() {
 	}
 
 	player := Player{
-		Pos:    IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
-		Sprite: "@",
+		Pos:        IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
+		Sprite:     rl.LoadTexture("player_idle.png"),
+		Visibility: 8,
 	}
 
 	log.Print(noisemapstring)
@@ -239,7 +265,7 @@ func main() {
 				}
 			}
 			pos := IVector2{X: pos_x, Y: pos_y}
-			tile := charToTile(char, pos)
+			tile := charToTile(&tile_textures, char, pos)
 			tiles[pos] = tile
 		}
 	}
@@ -254,17 +280,51 @@ func main() {
 
 		rl.BeginDrawing()
 		rl.BeginMode2D(cam)
-		rl.ClearBackground(rl.DarkGray)
+		rl.ClearBackground(rl.Black)
 
 		for _, tile := range tiles {
-			rl.DrawRectangle(tile.Pos.X, tile.Pos.Y, TILE_SIZE, TILE_SIZE, tile.Colour)
+			if colour, ok := checkTileVisibility(&player, &tile); ok {
+				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+			}
 		}
 
-		rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
+		rl.DrawTexture(player.Sprite, player.Pos.X, player.Pos.Y, rl.White)
+		//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
 
 		rl.EndMode2D()
 		rl.EndDrawing()
 	}
 
+	for _, t := range tile_textures {
+		rl.UnloadTexture(t)
+	}
+	rl.UnloadTexture(player.Sprite)
+
 	rl.CloseWindow()
+}
+
+func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
+	visrange := int32(player.Visibility) * TILE_SIZE
+	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
+		return rl.Black, false
+	} else {
+		distance_alpha := getTileDistanceToPlayer(player, tile)/float32(player.Visibility) - 0.15
+		return rl.ColorAlpha(rl.White, reverseRange(distance_alpha)), true
+	}
+}
+
+func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
+	tile_vec := IVec2ToVec2(tile.Pos)
+	player_vec := IVec2ToVec2(player.Pos)
+	distance := rl.Vector2Distance(tile_vec, player_vec) / float32(TILE_SIZE)
+
+	return distance
+}
+
+func IVec2ToVec2(ivec IVector2) rl.Vector2 {
+	return rl.Vector2{X: float32(ivec.X), Y: float32(ivec.Y)}
+}
+
+func reverseRange(v float32) float32 {
+	return float32(math.Abs((float64(v) - 1.0) / (0.0 - 1.0)))
 }
