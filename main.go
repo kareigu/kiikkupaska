@@ -275,6 +275,14 @@ func main() {
 
 		movePlayer(&player, &tiles, rl.GetKeyPressed())
 
+		if rl.IsKeyPressed(rl.KeyI) {
+			player.Visibility++
+		}
+
+		if rl.IsKeyPressed(rl.KeyK) {
+			player.Visibility--
+		}
+
 		cam.Target.X = float32(player.Pos.X)
 		cam.Target.Y = float32(player.Pos.Y)
 
@@ -283,8 +291,16 @@ func main() {
 		rl.ClearBackground(rl.Black)
 
 		for _, tile := range tiles {
+			// Check if tile coordinates are in player visibility range
+			// If not don't bother rendering it
 			if colour, ok := checkTileVisibility(&player, &tile); ok {
 				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+
+				//! Tile light debug display
+				//rl.DrawText(fmt.Sprintf("%d", colour.A), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
+				//! Tile distance debug display
+				/* dist := getTileDistanceToPlayer(&player, &tile)
+				rl.DrawText(fmt.Sprintf("%.1f", math.Min(float64(dist), 10.0)), tile.Pos.X, tile.Pos.Y, 12, rl.Red) */
 			}
 		}
 
@@ -308,8 +324,11 @@ func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
 	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
 		return rl.Black, false
 	} else {
-		distance_alpha := getTileDistanceToPlayer(player, tile)/float32(player.Visibility) - 0.15
-		return rl.ColorAlpha(rl.White, reverseRange(distance_alpha)), true
+		distance_alpha := float32(getTileDistanceToPlayer(player, tile)) / float32(player.Visibility)
+		colour := rl.ColorAlpha(rl.White, distance_alpha)
+		// Reverse alpha to make closer tiles brighter instead of darker
+		colour.A = uint8(math.Abs(float64(colour.A) - 255.0))
+		return colour, true
 	}
 }
 
