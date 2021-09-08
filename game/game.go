@@ -125,7 +125,6 @@ func generateTiles(tile_textures *[]rl.Texture2D) *map[IVector2]Tile {
 			pos_x := int32(x) * TILE_SIZE
 			pos_y := int32(y) * TILE_SIZE
 			if char == "P" {
-				log.Printf("Player: %v", player)
 				if player.Pos.X == PLAYER_OFFSET_X && player.Pos.Y == PLAYER_OFFSET_Y {
 					player.Pos.X = pos_x + PLAYER_OFFSET_X
 					player.Pos.Y = pos_y + PLAYER_OFFSET_Y
