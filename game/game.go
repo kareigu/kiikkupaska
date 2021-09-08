@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	simplex "github.com/ojrac/opensimplex-go"
@@ -16,87 +17,92 @@ const PLAYER_OFFSET_X int32 = 0
 const PLAYER_OFFSET_Y int32 = 0
 
 type GameState struct {
-	Resolution *IVector2
-	Camera     *rl.Camera2D
-	Player     *Player
-	Map        *map[IVector2]Tile
-}
-
-type IVector2 struct {
-	X int32
-	Y int32
+	AppState *utils.State
+	Camera   *rl.Camera2D
+	Player   *Player
+	Map      *map[utils.IVector2]Tile
 }
 
 type Tile struct {
 	Texture rl.Texture2D
-	Pos     IVector2
+	Pos     utils.IVector2
 	Block   bool
 }
 
 type Player struct {
-	Pos        IVector2
+	Pos        utils.IVector2
 	Sprite     rl.Texture2D
 	Visibility int8
 }
 
 var state GameState
 
-func InitGame(res *IVector2, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D) *GameState {
-	player, cam := initPlayerAndCam((*res), character_textures)
+func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D) *GameState {
+	player, cam := initPlayerAndCam(appState, character_textures)
 	state = GameState{
-		Resolution: res,
-		Player:     player,
-		Camera:     cam,
-		Map:        nil,
+		AppState: appState,
+		Player:   player,
+		Camera:   cam,
+		Map:      nil,
 	}
 	state.Map = generateTiles(tile_textures)
 	return &state
 }
 
-func GameUpdate() {
-	movePlayer(state.Player, state.Map, rl.GetKeyPressed())
+func GameUpdate(appState *utils.State, gameState **GameState, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D) {
+	if state.AppState == nil {
+		appState.Loading = true
+		*gameState = InitGame(appState, character_textures, tile_textures)
+		appState.Loading = false
+	} else {
+		movePlayer(state.Player, state.Map, rl.GetKeyPressed())
 
-	if rl.IsKeyPressed(rl.KeyI) {
-		state.Player.Visibility++
-	}
-
-	if rl.IsKeyPressed(rl.KeyK) {
-		state.Player.Visibility--
-	}
-
-	state.Camera.Target.X = float32(state.Player.Pos.X)
-	state.Camera.Target.Y = float32(state.Player.Pos.Y)
-
-	rl.BeginDrawing()
-	rl.BeginMode2D(*state.Camera)
-	rl.ClearBackground(rl.Black)
-
-	for _, tile := range *state.Map {
-		// Check if tile coordinates are in player visibility range
-		// If not don't bother rendering it
-		if colour, ok := checkTileVisibility(state.Player, &tile); ok {
-			rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
-
-			//! Tile light debug display
-			//rl.DrawText(fmt.Sprintf("%d", colour.A), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
-			//! Tile distance debug display
-			/* dist := getTileDistanceToPlayer(&player, &tile)
-			rl.DrawText(fmt.Sprintf("%.1f", math.Min(float64(dist), 10.0)), tile.Pos.X, tile.Pos.Y, 12, rl.Red) */
+		if rl.IsKeyPressed(rl.KeyI) {
+			state.Player.Visibility++
 		}
+
+		if rl.IsKeyPressed(rl.KeyK) {
+			state.Player.Visibility--
+		}
+
+		if rl.IsKeyPressed(rl.KeyM) {
+			state.AppState.View = utils.PAUSED
+		}
+
+		state.Camera.Target.X = float32(state.Player.Pos.X)
+		state.Camera.Target.Y = float32(state.Player.Pos.Y)
+
+		rl.BeginDrawing()
+		rl.BeginMode2D(*state.Camera)
+		rl.ClearBackground(rl.Black)
+
+		for _, tile := range *state.Map {
+			// Check if tile coordinates are in player visibility range
+			// If not don't bother rendering it
+			if colour, ok := checkTileVisibility(state.Player, &tile); ok {
+				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+
+				//! Tile light debug display
+				//rl.DrawText(fmt.Sprintf("%d", colour.A), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
+				//! Tile distance debug display
+				/* dist := getTileDistanceToPlayer(&player, &tile)
+				rl.DrawText(fmt.Sprintf("%.1f", math.Min(float64(dist), 10.0)), tile.Pos.X, tile.Pos.Y, 12, rl.Red) */
+			}
+		}
+
+		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
+		//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
+
+		rl.EndMode2D()
+		rl.EndDrawing()
 	}
-
-	rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
-	//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
-
-	rl.EndMode2D()
-	rl.EndDrawing()
 }
 
-func initPlayerAndCam(res IVector2, character_textures *[]rl.Texture2D) (*Player, *rl.Camera2D) {
+func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*Player, *rl.Camera2D) {
 	cam := rl.Camera2D{
 		Offset: rl.Vector2{
-			X: float32(res.X / 2),
-			Y: float32(res.Y / 2),
+			X: float32(state.RES.X / 2),
+			Y: float32(state.RES.Y / 2),
 		},
 		Target: rl.Vector2{
 			X: 0.0,
@@ -107,7 +113,7 @@ func initPlayerAndCam(res IVector2, character_textures *[]rl.Texture2D) (*Player
 	}
 
 	player := Player{
-		Pos:        IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
+		Pos:        utils.IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
 		Sprite:     (*character_textures)[0],
 		Visibility: 8,
 	}
@@ -115,9 +121,9 @@ func initPlayerAndCam(res IVector2, character_textures *[]rl.Texture2D) (*Player
 	return &player, &cam
 }
 
-func generateTiles(tile_textures *[]rl.Texture2D) *map[IVector2]Tile {
+func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
 	mapstring := generateMap()
-	tiles := make(map[IVector2]Tile)
+	tiles := make(map[utils.IVector2]Tile)
 	player := state.Player
 
 	for y, row := range strings.Split(mapstring, "\n") {
@@ -135,7 +141,7 @@ func generateTiles(tile_textures *[]rl.Texture2D) *map[IVector2]Tile {
 					}
 				}
 			}
-			pos := IVector2{X: pos_x, Y: pos_y}
+			pos := utils.IVector2{X: pos_x, Y: pos_y}
 			tile := charToTile(tile_textures, char, pos)
 			tiles[pos] = tile
 		}
@@ -165,7 +171,7 @@ func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
 	return distance
 }
 
-func IVec2ToVec2(ivec IVector2) rl.Vector2 {
+func IVec2ToVec2(ivec utils.IVector2) rl.Vector2 {
 	return rl.Vector2{X: float32(ivec.X), Y: float32(ivec.Y)}
 }
 
@@ -215,7 +221,7 @@ func generateMap() string {
 	return mapstring
 }
 
-func charToTile(texturelist *[]rl.Texture2D, c string, pos IVector2) Tile {
+func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile {
 	switch c {
 	case "@":
 		return Tile{
@@ -260,7 +266,7 @@ func charToTile(texturelist *[]rl.Texture2D, c string, pos IVector2) Tile {
 	}
 }
 
-func movePlayer(player *Player, tiles *map[IVector2]Tile, key int32) {
+func movePlayer(player *Player, tiles *map[utils.IVector2]Tile, key int32) {
 	p_x := player.Pos.X
 	p_y := player.Pos.Y
 
@@ -277,7 +283,7 @@ func movePlayer(player *Player, tiles *map[IVector2]Tile, key int32) {
 		p_y += TILE_SIZE
 	}
 
-	npos := IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
+	npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
 
 	if tile, ok := (*tiles)[npos]; ok {
 		if tile.Block {
