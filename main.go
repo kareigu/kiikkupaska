@@ -120,9 +120,21 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			utils.DrawMainText(rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, "Paused", rl.RayWhite)
+			utils.DrawMainText(rl.Vector2{X: float32(state.RES.X) / 2.25, Y: float32(state.RES.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
+
+			resume := utils.DrawButton(rl.NewVector2(float32(state.RES.X)/2.0, float32(state.RES.Y)/2.0+50.0), "RESUME")
+			exit := utils.DrawButton(rl.NewVector2(float32(state.RES.X)/2.0, float32(state.RES.Y)/2.0+100.0), "EXIT TO MENU")
 
 			rl.EndDrawing()
+
+			if resume {
+				state.View = utils.IN_GAME
+			}
+
+			if exit {
+				gameState.AppState = nil
+				state.View = utils.MAIN_MENU
+			}
 		case utils.IN_GAME:
 			game.GameUpdate(&state, &gameState, &character_textures, &tile_textures, &ui_sprites)
 		}
