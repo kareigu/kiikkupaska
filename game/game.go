@@ -249,7 +249,7 @@ func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
 			tiles[pos] = tile
 		}
 	}
-	log.Print(mapstring)
+	utils.DebugPrint(mapstring)
 	return &tiles
 }
 

@@ -14,6 +14,7 @@ import (
 )
 
 var state utils.State
+var debugMode = false
 
 func init() {
 	runtime.LockOSThread()
@@ -24,11 +25,13 @@ func init() {
 	widthFlag := flag.Int("w", 800, "Define the window width")
 	heightFlag := flag.Int("h", 600, "Define the window height")
 	musicFlag := flag.Bool("music", false, "Enable or disable music")
+	debugFlag := flag.Bool("debug", false, "Enable debug mode")
 
 	flag.Parse()
 
 	log.Printf("Running with flags: -w %d -h %d -music=%v", *widthFlag, *heightFlag, *musicFlag)
 
+	debugMode = *debugFlag
 	state = utils.State{
 		Loading:  false,
 		View:     utils.MAIN_MENU,
@@ -44,7 +47,7 @@ func main() {
 	rl.InitWindow(state.RES.X, state.RES.Y, "go-raylib")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
 
-	utils.InitUtils(&state)
+	utils.InitUtils(&state, debugMode)
 	tile_textures := rendering.LoadTileTextures()
 	character_textures := rendering.LoadCharacterTextures()
 	ui_sprites := rendering.LoadUISprites()

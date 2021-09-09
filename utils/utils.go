@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"log"
+
 	rgui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -42,9 +44,17 @@ type IVector2 struct {
 }
 
 var appState *State
+var debugMode bool
 
-func InitUtils(state *State) {
+func InitUtils(state *State, debug bool) {
 	appState = state
+	debugMode = debug
+}
+
+func DebugPrint(v interface{}) {
+	if debugMode {
+		log.Print(v)
+	}
 }
 
 func GetAssetPath(asset_type int, path string) string {
