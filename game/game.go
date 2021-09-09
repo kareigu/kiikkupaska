@@ -209,7 +209,8 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 
 		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
 		if state.SelectionMode.Using {
-			rl.DrawTexture((*ui_sprites)[2], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.White)
+			alpha := float32((math.Cos(3.0*float64(rl.GetTime())) + 1) * 0.5)
+			rl.DrawTexture((*ui_sprites)[2], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
 		}
 
 		rl.EndMode2D()
