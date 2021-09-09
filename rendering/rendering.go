@@ -40,9 +40,13 @@ func LoadGUIStylesheet() {
 	rgui.LoadGuiStyle(utils.GetAssetPath(utils.STYLESHEET, "zahnrad.style"))
 }
 
-func LoadFont() rl.Font {
-	font := rl.LoadFont(utils.GetAssetPath(utils.FONT, "setback.png"))
-	rl.GenTextureMipmaps(&font.Texture)
-	rl.SetTextureFilter(font.Texture, rl.FilterPoint)
-	return font
+func LoadFonts() (rl.Font, rl.Font) {
+	mainFont := rl.LoadFont(utils.GetAssetPath(utils.FONT, "setback.png"))
+	rl.GenTextureMipmaps(&mainFont.Texture)
+	rl.SetTextureFilter(mainFont.Texture, rl.FilterPoint)
+	secFont := rl.LoadFont(utils.GetAssetPath(utils.FONT, "alpha_beta.png"))
+	rl.GenTextureMipmaps(&secFont.Texture)
+	rl.SetTextureFilter(secFont.Texture, rl.FilterPoint)
+
+	return mainFont, secFont
 }

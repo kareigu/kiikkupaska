@@ -33,11 +33,12 @@ func init() {
 
 	debugMode = *debugFlag
 	state = utils.State{
-		Loading:  false,
-		View:     utils.MAIN_MENU,
-		RES:      utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
-		Music:    *musicFlag,
-		MainFont: rl.GetFontDefault(),
+		Loading:       false,
+		View:          utils.MAIN_MENU,
+		RES:           utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
+		Music:         *musicFlag,
+		MainFont:      rl.GetFontDefault(),
+		SecondaryFont: rl.GetFontDefault(),
 	}
 }
 
@@ -52,7 +53,7 @@ func main() {
 	tile_textures := rendering.LoadTileTextures()
 	character_textures := rendering.LoadCharacterTextures()
 	ui_sprites := rendering.LoadUISprites()
-	state.MainFont = rendering.LoadFont()
+	state.MainFont, state.SecondaryFont = rendering.LoadFonts()
 	rendering.LoadGUIStylesheet()
 	rl.InitAudioDevice()
 

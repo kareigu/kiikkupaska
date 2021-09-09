@@ -39,3 +39,33 @@ func drawDebugSettings() {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 }
+
+func drawDebugInfo() {
+	var tile Tile
+	if state.SelectionMode.Using {
+		tile = (*state.Map)[state.SelectionMode.Pos]
+	} else {
+		tile = (*state.Map)[state.Player.Pos]
+	}
+
+	background := rl.NewRectangle(50.0, 280.0, 250.0, 180.0)
+
+	pos := utils.IVector2{
+		X: tile.Pos.X / TILE_SIZE,
+		Y: tile.Pos.Y / TILE_SIZE,
+	}
+
+	data := fmt.Sprintf("Tile Pos: %v\nBlock: %v\nTexture ID: %v", pos, tile.Block, tile.Texture.ID)
+
+	rl.DrawRectangleRec(background, rl.DarkGray)
+
+	rl.DrawTextRec(
+		state.AppState.SecondaryFont,
+		data,
+		background,
+		24.0,
+		1.0,
+		true,
+		rl.White,
+	)
+}

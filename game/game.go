@@ -237,6 +237,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 
 		if state.DebugDisplay.Enabled {
 			drawDebugSettings()
+			drawDebugInfo()
 		}
 		rl.EndDrawing()
 	}

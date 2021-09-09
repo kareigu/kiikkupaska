@@ -31,11 +31,12 @@ const fontsFolder = assetsFolder + "fonts/"
 const musicFolder = assetsFolder + "music/"
 
 type State struct {
-	Loading  bool
-	View     int
-	RES      IVector2
-	Music    bool
-	MainFont rl.Font
+	Loading       bool
+	View          int
+	RES           IVector2
+	Music         bool
+	MainFont      rl.Font
+	SecondaryFont rl.Font
 }
 
 type IVector2 struct {
