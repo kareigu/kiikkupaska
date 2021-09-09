@@ -17,10 +17,12 @@ const PLAYER_OFFSET_X int32 = 0
 const PLAYER_OFFSET_Y int32 = 0
 
 type GameState struct {
-	AppState *utils.State
-	Camera   *rl.Camera2D
-	Player   *Player
-	Map      *map[utils.IVector2]Tile
+	AppState          *utils.State
+	Camera            *rl.Camera2D
+	Player            *Player
+	Map               *map[utils.IVector2]Tile
+	DebugDisplay      DebugDisplayData
+	tempTimeSinceTurn float32
 }
 
 type Tile struct {
@@ -30,9 +32,44 @@ type Tile struct {
 }
 
 type Player struct {
-	Pos        utils.IVector2
-	Sprite     rl.Texture2D
-	Visibility int8
+	Pos    utils.IVector2
+	Sprite rl.Texture2D
+	Stats  Stats
+	Turn   TurnData
+}
+
+type TurnData struct {
+	Movement uint8
+	Actions  uint8
+	Done     bool
+}
+
+type Stats struct {
+	Movement   uint8
+	Visibility uint8
+	Vitality   uint8
+	Strength   uint8
+	Dexterity  uint8
+}
+
+type Character interface {
+	GetTurn() *TurnData
+	GetStats() *Stats
+	StartTurn()
+}
+
+func (player *Player) GetTurn() *TurnData {
+	return &player.Turn
+}
+
+func (player *Player) GetStats() *Stats {
+	return &player.Stats
+}
+
+func (player *Player) StartTurn() {
+	player.Turn.Actions = 3
+	player.Turn.Movement = player.Stats.Movement
+	player.Turn.Done = false
 }
 
 var state GameState
@@ -44,58 +81,14 @@ func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_te
 		Player:   player,
 		Camera:   cam,
 		Map:      nil,
+		DebugDisplay: DebugDisplayData{
+			Enabled:         false,
+			TileDisplayMode: DD_TILE_DISTANCE_FROM_PLAYER,
+		},
+		tempTimeSinceTurn: 0.0,
 	}
 	state.Map = generateTiles(tile_textures)
 	return &state
-}
-
-func GameUpdate(appState *utils.State, gameState **GameState, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D) {
-	if state.AppState == nil {
-		appState.Loading = true
-		*gameState = InitGame(appState, character_textures, tile_textures)
-		appState.Loading = false
-	} else {
-		movePlayer(state.Player, state.Map, rl.GetKeyPressed())
-
-		if rl.IsKeyPressed(rl.KeyI) {
-			state.Player.Visibility++
-		}
-
-		if rl.IsKeyPressed(rl.KeyK) {
-			state.Player.Visibility--
-		}
-
-		if rl.IsKeyPressed(rl.KeyM) {
-			state.AppState.View = utils.PAUSED
-		}
-
-		state.Camera.Target.X = float32(state.Player.Pos.X)
-		state.Camera.Target.Y = float32(state.Player.Pos.Y)
-
-		rl.BeginDrawing()
-		rl.BeginMode2D(*state.Camera)
-		rl.ClearBackground(rl.Black)
-
-		for _, tile := range *state.Map {
-			// Check if tile coordinates are in player visibility range
-			// If not don't bother rendering it
-			if colour, ok := checkTileVisibility(state.Player, &tile); ok {
-				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
-
-				//! Tile light debug display
-				//rl.DrawText(fmt.Sprintf("%d", colour.A), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
-				//! Tile distance debug display
-				/* dist := getTileDistanceToPlayer(&player, &tile)
-				rl.DrawText(fmt.Sprintf("%.1f", math.Min(float64(dist), 10.0)), tile.Pos.X, tile.Pos.Y, 12, rl.Red) */
-			}
-		}
-
-		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
-		//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
-
-		rl.EndMode2D()
-		rl.EndDrawing()
-	}
 }
 
 func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*Player, *rl.Camera2D) {
@@ -113,12 +106,122 @@ func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*
 	}
 
 	player := Player{
-		Pos:        utils.IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
-		Sprite:     (*character_textures)[0],
-		Visibility: 8,
+		Pos:    utils.IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
+		Sprite: (*character_textures)[0],
+		Stats: Stats{
+			Movement:   6,
+			Visibility: 8,
+			Vitality:   6,
+			Strength:   6,
+			Dexterity:  6,
+		},
+		Turn: TurnData{
+			Movement: 6,
+			Actions:  3,
+			Done:     false,
+		},
 	}
 
 	return &player, &cam
+}
+
+func GameUpdate(appState *utils.State, gameState **GameState, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D, ui_sprites *[]rl.Texture2D) {
+	if state.AppState == nil {
+		appState.Loading = true
+		*gameState = InitGame(appState, character_textures, tile_textures)
+		appState.Loading = false
+	} else {
+
+		if !state.Player.Turn.Done {
+			movePlayer(state.Player, state.Map, rl.GetKeyPressed())
+			if rl.IsKeyPressed(rl.KeySpace) {
+				if state.Player.Turn.Actions > 0 {
+					state.Player.Turn.Actions--
+				}
+			}
+			state.tempTimeSinceTurn = 0.0
+		} else {
+			if state.tempTimeSinceTurn > 5.0 {
+				state.Player.StartTurn()
+			} else {
+				state.tempTimeSinceTurn += rl.GetFrameTime()
+			}
+		}
+
+		if rl.IsKeyPressed(rl.KeyI) {
+			state.Player.Stats.Visibility++
+		}
+
+		if rl.IsKeyPressed(rl.KeyK) {
+			state.Player.Stats.Visibility--
+		}
+
+		if rl.IsKeyPressed(rl.KeyM) {
+			state.AppState.View = utils.PAUSED
+		}
+
+		if rl.IsKeyPressed(rl.KeyF1) {
+			state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
+		}
+
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			state.Player.Turn.Done = true
+		}
+
+		state.Camera.Target.X = float32(state.Player.Pos.X)
+		state.Camera.Target.Y = float32(state.Player.Pos.Y)
+
+		rl.BeginDrawing()
+
+		//
+		//	Draw 2D objects
+		//	Characters, tiles etc.
+		//
+		rl.BeginMode2D(*state.Camera)
+		rl.ClearBackground(rl.Black)
+
+		for _, tile := range *state.Map {
+			// Check if tile coordinates are in player visibility range
+			// If not don't bother rendering it
+			if colour, ok := checkTileVisibility(state.Player, &tile); ok {
+				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+
+				if state.DebugDisplay.Enabled {
+					handleTileDebugDisplay(&tile, colour)
+				}
+			}
+		}
+
+		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
+		//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
+
+		rl.EndMode2D()
+
+		//
+		//	Draw UI stuff
+		//
+
+		if !state.Player.Turn.Done {
+			for h := 0; h < int(state.Player.Turn.Actions); h++ {
+				rl.DrawTexture((*ui_sprites)[0], state.AppState.RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
+			}
+
+			for m := 0; m < int(state.Player.Turn.Movement); m++ {
+				rl.DrawTexture((*ui_sprites)[1], state.AppState.RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
+			}
+
+			if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {
+				utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
+			}
+		} else {
+			utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
+		}
+
+		if state.DebugDisplay.Enabled {
+			drawDebugSettings()
+		}
+		rl.EndDrawing()
+	}
 }
 
 func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
@@ -151,11 +254,11 @@ func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
 }
 
 func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
-	visrange := int32(player.Visibility) * TILE_SIZE
+	visrange := int32(player.Stats.Visibility) * TILE_SIZE
 	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
 		return rl.Black, false
 	} else {
-		distance_alpha := float32(getTileDistanceToPlayer(player, tile)) / float32(player.Visibility)
+		distance_alpha := float32(getTileDistanceToPlayer(player, tile)) / float32(player.Stats.Visibility)
 		colour := rl.ColorAlpha(rl.White, distance_alpha)
 		// Reverse alpha to make closer tiles brighter instead of darker
 		colour.A = uint8(math.Abs(float64(colour.A) - 255.0))
@@ -267,32 +370,38 @@ func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile 
 }
 
 func movePlayer(player *Player, tiles *map[utils.IVector2]Tile, key int32) {
-	p_x := player.Pos.X
-	p_y := player.Pos.Y
 
-	if rl.IsKeyPressed(rl.KeyLeft) {
-		p_x -= TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyRight) {
-		p_x += TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyUp) {
-		p_y -= TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyDown) {
-		p_y += TILE_SIZE
-	}
+	if player.Turn.Movement > 0 {
+		p_x := player.Pos.X
+		p_y := player.Pos.Y
 
-	npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
+		if rl.IsKeyPressed(rl.KeyLeft) {
+			p_x -= TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyRight) {
+			p_x += TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyUp) {
+			p_y -= TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyDown) {
+			p_y += TILE_SIZE
+		}
 
-	if tile, ok := (*tiles)[npos]; ok {
-		if tile.Block {
+		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
+
+		if tile, ok := (*tiles)[npos]; ok {
+			if tile.Block {
+				return
+			}
+		} else {
 			return
 		}
-	} else {
-		return
-	}
 
-	player.Pos.X = p_x
-	player.Pos.Y = p_y
+		if p_x != player.Pos.X || p_y != player.Pos.Y {
+			player.Pos.X = p_x
+			player.Pos.Y = p_y
+			player.Turn.Movement--
+		}
+	}
 }

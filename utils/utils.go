@@ -1,5 +1,10 @@
 package utils
 
+import (
+	rgui "github.com/gen2brain/raylib-go/raygui"
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
+
 const (
 	MAIN_MENU = iota
 	PAUSED    = iota
@@ -24,15 +29,22 @@ const fontsFolder = assetsFolder + "fonts/"
 const musicFolder = assetsFolder + "music/"
 
 type State struct {
-	Loading bool
-	View    int
-	RES     IVector2
-	Music   bool
+	Loading  bool
+	View     int
+	RES      IVector2
+	Music    bool
+	MainFont rl.Font
 }
 
 type IVector2 struct {
 	X int32
 	Y int32
+}
+
+var appState *State
+
+func InitUtils(state *State) {
+	appState = state
 }
 
 func GetAssetPath(asset_type int, path string) string {
@@ -52,4 +64,12 @@ func GetAssetPath(asset_type int, path string) string {
 	default:
 		return "Invalid asset type"
 	}
+}
+
+func DrawButton(pos rl.Vector2, text string) bool {
+	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: 100.0, Height: 25.0}, text)
+}
+
+func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {
+	rl.DrawTextEx(appState.MainFont, text, pos, size, 1.0, colour)
 }

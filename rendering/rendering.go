@@ -3,7 +3,7 @@ package rendering
 import (
 	"utils"
 
-	"github.com/gen2brain/raylib-go/raygui"
+	rgui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -27,8 +27,16 @@ func LoadCharacterTextures() []rl.Texture2D {
 	return texturelist
 }
 
+func LoadUISprites() []rl.Texture2D {
+	texturelist := make([]rl.Texture2D, 2)
+	texturelist[0] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "action_mark.png"))
+	texturelist[1] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "movement_mark.png"))
+
+	return texturelist
+}
+
 func LoadGUIStylesheet() {
-	raygui.LoadGuiStyle(utils.GetAssetPath(utils.STYLESHEET, "zahnrad.style"))
+	rgui.LoadGuiStyle(utils.GetAssetPath(utils.STYLESHEET, "zahnrad.style"))
 }
 
 func LoadFont() rl.Font {

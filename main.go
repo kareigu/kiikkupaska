@@ -10,7 +10,6 @@ import (
 	"rendering"
 	"utils"
 
-	rgui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -31,10 +30,11 @@ func init() {
 	log.Printf("Running with flags: -w %d -h %d -music=%v", *widthFlag, *heightFlag, *musicFlag)
 
 	state = utils.State{
-		Loading: false,
-		View:    utils.MAIN_MENU,
-		RES:     utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
-		Music:   *musicFlag,
+		Loading:  false,
+		View:     utils.MAIN_MENU,
+		RES:      utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
+		Music:    *musicFlag,
+		MainFont: rl.GetFontDefault(),
 	}
 }
 
@@ -44,9 +44,11 @@ func main() {
 	rl.InitWindow(state.RES.X, state.RES.Y, "go-raylib")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
 
+	utils.InitUtils(&state)
 	tile_textures := rendering.LoadTileTextures()
 	character_textures := rendering.LoadCharacterTextures()
-	font := rendering.LoadFont()
+	ui_sprites := rendering.LoadUISprites()
+	state.MainFont = rendering.LoadFont()
 	rendering.LoadGUIStylesheet()
 	rl.InitAudioDevice()
 
@@ -68,7 +70,9 @@ func main() {
 		rl.PlayMusicStream(music[3])
 	}
 
-	for !rl.WindowShouldClose() {
+	exitWindow := false
+	for !exitWindow {
+		exitWindow = rl.WindowShouldClose()
 		rl.SetWindowTitle(fmt.Sprintf("kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
 
 		if state.Music {
@@ -87,17 +91,16 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawTextEx(font, "Main Menu", rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, 1.0, rl.RayWhite)
-			start := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y) / 2.0, Width: 100.0, Height: 25.0}, "Start")
-			exit := rgui.Button(rl.Rectangle{X: float32(state.RES.X) / 2.0, Y: float32(state.RES.Y)/2.0 + 100.0, Width: 100.0, Height: 25.0}, "Quit")
+			utils.DrawMainText(rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
+			start := utils.DrawButton(rl.NewVector2(float32(state.RES.X)/2.0, float32(state.RES.Y)/2.0+50.0), "START")
+			exit := utils.DrawButton(rl.NewVector2(float32(state.RES.X)/2.0, float32(state.RES.Y)/2.0+100.0), "QUIT")
 
 			rl.EndDrawing()
 			if start {
 				state.View = utils.IN_GAME
 			}
 			if exit {
-				cleanup(&tile_textures, &character_textures)
-				rl.CloseWindow()
+				exitWindow = true
 			}
 		case utils.PAUSED:
 			if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeyM) {
@@ -112,11 +115,11 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			rl.DrawTextEx(font, "Paused", rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, 1.0, rl.RayWhite)
+			utils.DrawMainText(rl.Vector2{X: float32(state.RES.X/2 - 170), Y: float32(state.RES.Y / 6)}, 96.0, "Paused", rl.RayWhite)
 
 			rl.EndDrawing()
 		case utils.IN_GAME:
-			game.GameUpdate(&state, &gameState, &character_textures, &tile_textures)
+			game.GameUpdate(&state, &gameState, &character_textures, &tile_textures, &ui_sprites)
 		}
 	}
 
