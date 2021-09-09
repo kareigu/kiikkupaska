@@ -17,12 +17,19 @@ const PLAYER_OFFSET_X int32 = 0
 const PLAYER_OFFSET_Y int32 = 0
 
 type GameState struct {
-	AppState          *utils.State
-	Camera            *rl.Camera2D
-	Player            *Player
-	Map               *map[utils.IVector2]Tile
-	DebugDisplay      DebugDisplayData
+	AppState      *utils.State
+	Camera        *rl.Camera2D
+	Player        *Player
+	Map           *map[utils.IVector2]Tile
+	SelectionMode SelectionMode
+	DebugDisplay  DebugDisplayData
+
 	tempTimeSinceTurn float32
+}
+
+type SelectionMode struct {
+	Using bool
+	Pos   utils.IVector2
 }
 
 type Tile struct {
@@ -85,6 +92,10 @@ func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_te
 			Enabled:         false,
 			TileDisplayMode: DD_TILE_DISTANCE_FROM_PLAYER,
 		},
+		SelectionMode: SelectionMode{
+			Using: false,
+			Pos:   player.Pos,
+		},
 		tempTimeSinceTurn: 0.0,
 	}
 	state.Map = generateTiles(tile_textures)
@@ -133,11 +144,10 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 	} else {
 
 		if !state.Player.Turn.Done {
-			movePlayer(state.Player, state.Map, rl.GetKeyPressed())
-			if rl.IsKeyPressed(rl.KeySpace) {
-				if state.Player.Turn.Actions > 0 {
-					state.Player.Turn.Actions--
-				}
+			if state.SelectionMode.Using {
+				moveSelectionCursor(&state.SelectionMode)
+			} else {
+				movePlayer(state.Player, state.Map)
 			}
 			state.tempTimeSinceTurn = 0.0
 		} else {
@@ -148,6 +158,11 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			}
 		}
 
+		if rl.IsKeyPressed(rl.KeySpace) {
+			state.SelectionMode.Pos = state.Player.Pos
+			state.SelectionMode.Using = !state.SelectionMode.Using
+		}
+
 		if rl.IsKeyPressed(rl.KeyI) {
 			state.Player.Stats.Visibility++
 		}
@@ -156,7 +171,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			state.Player.Stats.Visibility--
 		}
 
-		if rl.IsKeyPressed(rl.KeyM) {
+		if rl.IsKeyPressed(rl.KeyM) || rl.IsKeyPressed(rl.KeyEscape) {
 			state.AppState.View = utils.PAUSED
 		}
 
@@ -193,7 +208,9 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 		}
 
 		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
-		//rl.DrawText(player.Sprite, player.Pos.X, player.Pos.Y, TILE_SIZE, rl.Red)
+		if state.SelectionMode.Using {
+			rl.DrawTexture((*ui_sprites)[2], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.White)
+		}
 
 		rl.EndMode2D()
 
@@ -369,7 +386,7 @@ func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile 
 	}
 }
 
-func movePlayer(player *Player, tiles *map[utils.IVector2]Tile, key int32) {
+func movePlayer(player *Player, tiles *map[utils.IVector2]Tile) {
 
 	if player.Turn.Movement > 0 {
 		p_x := player.Pos.X
@@ -404,4 +421,25 @@ func movePlayer(player *Player, tiles *map[utils.IVector2]Tile, key int32) {
 			player.Turn.Movement--
 		}
 	}
+}
+
+func moveSelectionCursor(selection *SelectionMode) {
+	s_x := selection.Pos.X
+	s_y := selection.Pos.Y
+
+	if rl.IsKeyPressed(rl.KeyLeft) {
+		s_x -= TILE_SIZE
+	}
+	if rl.IsKeyPressed(rl.KeyRight) {
+		s_x += TILE_SIZE
+	}
+	if rl.IsKeyPressed(rl.KeyUp) {
+		s_y -= TILE_SIZE
+	}
+	if rl.IsKeyPressed(rl.KeyDown) {
+		s_y += TILE_SIZE
+	}
+
+	selection.Pos.X = s_x
+	selection.Pos.Y = s_y
 }

@@ -46,6 +46,7 @@ var music = make([]rl.Music, 4)
 func main() {
 	rl.InitWindow(state.RES.X, state.RES.Y, "go-raylib")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
+	rl.SetExitKey(rl.KeyF4)
 
 	utils.InitUtils(&state, debugMode)
 	tile_textures := rendering.LoadTileTextures()
@@ -106,7 +107,7 @@ func main() {
 				exitWindow = true
 			}
 		case utils.PAUSED:
-			if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeyM) {
+			if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyM) {
 				state.View = utils.IN_GAME
 			}
 
