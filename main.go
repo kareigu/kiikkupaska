@@ -1,10 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"os"
-	"strconv"
+	"runtime"
 
 	"game"
 	"rendering"
@@ -16,32 +16,29 @@ import (
 
 var state utils.State
 
+func init() {
+	runtime.LockOSThread()
+}
+
 // Handle cli arguments
 func init() {
-	var x int32
-	var y int32
-	if len(os.Args) > 1 {
-		args := os.Args[1:]
+	widthFlag := flag.Int("w", 800, "Define the window width")
+	heightFlag := flag.Int("h", 600, "Define the window height")
+	musicFlag := flag.Bool("music", false, "Enable or disable music")
 
-		width, err := strconv.Atoi(args[0])
-		if err == nil {
-			x = int32(width)
-		}
+	flag.Parse()
 
-		height, err := strconv.Atoi(args[1])
-		if err == nil {
-			y = int32(height)
-		}
-
-		log.Printf("Resolution changed to: %dx%d\n", width, height)
-	}
+	log.Printf("Running with flags: -w %d -h %d -music=%v", *widthFlag, *heightFlag, *musicFlag)
 
 	state = utils.State{
 		Loading: false,
 		View:    utils.MAIN_MENU,
-		RES:     utils.IVector2{X: x, Y: y},
+		RES:     utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
+		Music:   *musicFlag,
 	}
 }
+
+var music = make([]rl.Music, 4)
 
 func main() {
 	rl.InitWindow(state.RES.X, state.RES.Y, "go-raylib")
@@ -51,11 +48,36 @@ func main() {
 	character_textures := rendering.LoadCharacterTextures()
 	font := rendering.LoadFont()
 	rendering.LoadGUIStylesheet()
+	rl.InitAudioDevice()
 
 	var gameState *game.GameState
 
+	midx := 0
+	if state.Music {
+		music[0] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_int01.wav"))
+		music[1] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_pre01.wav"))
+		music[3] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_cbt01.wav"))
+		music[2] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_aft01.wav"))
+		music[0].Looping = false
+		music[1].Looping = false
+		music[2].Looping = false
+
+		rl.PlayMusicStream(music[0])
+		rl.PlayMusicStream(music[1])
+		rl.PlayMusicStream(music[2])
+		rl.PlayMusicStream(music[3])
+	}
+
 	for !rl.WindowShouldClose() {
 		rl.SetWindowTitle(fmt.Sprintf("kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
+
+		if state.Music {
+			rl.UpdateMusicStream(music[midx])
+			if !rl.IsMusicStreamPlaying(music[midx]) {
+				midx++
+			}
+		}
+
 		switch state.View {
 		case utils.MAIN_MENU:
 			if rl.IsKeyPressed(rl.KeyEnter) {
@@ -100,6 +122,7 @@ func main() {
 
 	cleanup(&tile_textures, &character_textures)
 
+	rl.CloseAudioDevice()
 	rl.CloseWindow()
 }
 
