@@ -13,6 +13,7 @@ type DebugDisplayData struct {
 }
 
 const (
+	DD_TILE_NO_DISPLAY           = iota
 	DD_TILE_LIGHT                = iota
 	DD_TILE_DISTANCE_FROM_PLAYER = iota
 )
@@ -31,11 +32,15 @@ func handleTileDebugDisplay(tile *Tile, colour rl.Color) {
 }
 
 func drawDebugSettings() {
-	if utils.DrawButton(rl.NewVector2(50.0, 110.0), "Tile light level") {
+	if utils.DrawButton(rl.NewVector2(50.0, 40.0), "No display") {
+		state.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
+	}
+
+	if utils.DrawButton(rl.NewVector2(50.0, 70.0), "Tile light level") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 230.0), "Tile distance from player") {
+	if utils.DrawButton(rl.NewVector2(50.0, 100.0), "Tile distance from player") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 }

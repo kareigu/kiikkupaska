@@ -45,15 +45,15 @@ type IVector2 struct {
 }
 
 var appState *State
-var debugMode bool
+var DebugMode bool
 
 func InitUtils(state *State, debug bool) {
 	appState = state
-	debugMode = debug
+	DebugMode = debug
 }
 
 func DebugPrint(v interface{}) {
-	if debugMode {
+	if DebugMode {
 		log.Print(v)
 	}
 }

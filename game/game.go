@@ -90,7 +90,7 @@ func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_te
 		Map:      nil,
 		DebugDisplay: DebugDisplayData{
 			Enabled:         false,
-			TileDisplayMode: DD_TILE_DISTANCE_FROM_PLAYER,
+			TileDisplayMode: DD_TILE_NO_DISPLAY,
 		},
 		SelectionMode: SelectionMode{
 			Using: false,
@@ -175,8 +175,10 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			state.AppState.View = utils.PAUSED
 		}
 
-		if rl.IsKeyPressed(rl.KeyF1) {
-			state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
+		if utils.DebugMode {
+			if rl.IsKeyPressed(rl.KeyF1) {
+				state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
+			}
 		}
 
 		if rl.IsKeyPressed(rl.KeyEnter) {
