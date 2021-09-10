@@ -59,6 +59,14 @@ func loadTileTextures() []rl.Texture2D {
 	return texturelist
 }
 
+func GetTile(tileType int) *rl.Texture2D {
+	if tex := &Assets.TileTextures[tileType]; tex != nil {
+		return tex
+	} else {
+		return &Assets.TileTextures[TILE_MISSING]
+	}
+}
+
 const (
 	PLAYER_IDLE = iota
 )
@@ -68,6 +76,14 @@ func loadCharacterSprites() []rl.Texture2D {
 	texturelist[PLAYER_IDLE] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "player_idle.png"))
 
 	return texturelist
+}
+
+func GetPlayerSprite(state int) *rl.Texture2D {
+	if tex := &Assets.CharacterSprites[state]; tex != nil {
+		return tex
+	} else {
+		return &Assets.TileTextures[TILE_MISSING]
+	}
 }
 
 const (
@@ -83,6 +99,14 @@ func loadUISprites() []rl.Texture2D {
 	texturelist[SPRITE_SELECTION_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "selection_mark.png"))
 
 	return texturelist
+}
+
+func GetUISprite(uiAsset int) *rl.Texture2D {
+	if tex := &Assets.UISprites[uiAsset]; tex != nil {
+		return tex
+	} else {
+		return &Assets.TileTextures[TILE_MISSING]
+	}
 }
 
 func loadGUIStylesheet() {

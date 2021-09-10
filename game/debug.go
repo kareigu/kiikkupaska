@@ -65,7 +65,7 @@ func drawDebugInfo() {
 		Y: tile.Pos.Y / TILE_SIZE,
 	}
 
-	data := fmt.Sprintf("Tile Pos: %v\nBlock: %v\nTexture ID: %v", pos, tile.Block, tile.Texture.ID)
+	data := fmt.Sprintf("Tile Pos: %v\nBlock: %v\nTile Type: %v", pos, tile.Block, tile.Type)
 
 	rl.DrawRectangleRec(background, rl.DarkGray)
 

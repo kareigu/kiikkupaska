@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -34,20 +33,6 @@ type SelectionMode struct {
 	Pos   utils.IVector2
 }
 
-type Tile struct {
-	Texture    rl.Texture2D
-	Pos        utils.IVector2
-	Block      bool
-	LightLevel uint8
-}
-
-type Player struct {
-	Pos    utils.IVector2
-	Sprite rl.Texture2D
-	Stats  Stats
-	Turn   TurnData
-}
-
 type TurnData struct {
 	Movement uint8
 	Actions  uint8
@@ -68,24 +53,10 @@ type Character interface {
 	StartTurn()
 }
 
-func (player *Player) GetTurn() *TurnData {
-	return &player.Turn
-}
-
-func (player *Player) GetStats() *Stats {
-	return &player.Stats
-}
-
-func (player *Player) StartTurn() {
-	player.Turn.Actions = 3
-	player.Turn.Movement = player.Stats.Movement
-	player.Turn.Done = false
-}
-
 var state GameState
 
 func InitGame(appState *utils.State) *GameState {
-	player, cam := initPlayerAndCam(appState, &appState.RenderAssets.CharacterSprites)
+	player, cam := initPlayerAndCam(appState)
 	state = GameState{
 		AppState: appState,
 		Player:   player,
@@ -105,7 +76,7 @@ func InitGame(appState *utils.State) *GameState {
 	return &state
 }
 
-func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*Player, *rl.Camera2D) {
+func initPlayerAndCam(state *utils.State) (*Player, *rl.Camera2D) {
 	cam := rl.Camera2D{
 		Offset: rl.Vector2{
 			X: float32(state.RES.X / 2),
@@ -120,8 +91,8 @@ func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*
 	}
 
 	player := Player{
-		Pos:    utils.IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
-		Sprite: (*character_textures)[0],
+		Pos:   utils.IVector2{X: PLAYER_OFFSET_X, Y: PLAYER_OFFSET_Y},
+		State: rendering.PLAYER_IDLE,
 		Stats: Stats{
 			Movement:   6,
 			Visibility: 8,
@@ -145,80 +116,20 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		*gameState = InitGame(appState)
 		appState.Loading = false
 	} else {
+		HandleControls()
 
-		if !state.Player.Turn.Done {
-			if state.SelectionMode.Using {
-				moveSelectionCursor(&state.SelectionMode)
-			} else {
-				movePlayer(state.Player, &state.Map)
-			}
-			state.tempTimeSinceTurn = 0.0
-		} else {
-			state.SelectionMode.Using = false
-			if state.tempTimeSinceTurn > 2.0 {
-				state.Player.StartTurn()
-			} else {
-				state.tempTimeSinceTurn += rl.GetFrameTime()
-			}
-		}
-
-		if rl.IsKeyPressed(rl.KeySpace) {
-			state.SelectionMode.Pos = state.Player.Pos
-			state.SelectionMode.Using = !state.SelectionMode.Using
-		}
-
-		if rl.IsKeyPressed(rl.KeyI) {
-			state.Player.Stats.Visibility++
-		}
-
-		if rl.IsKeyPressed(rl.KeyK) {
-			state.Player.Stats.Visibility--
-		}
-
-		if rl.IsKeyPressed(rl.KeyM) || rl.IsKeyPressed(rl.KeyEscape) {
-			state.AppState.View = utils.PAUSED
-		}
-
-		zoomMult := float32(rl.GetMouseWheelMove()) * 0.1
-		if state.Camera.Zoom+zoomMult > 0.2 {
-			state.Camera.Zoom += zoomMult
-		}
-
-		if state.SelectionMode.Using {
-			if state.Player.Turn.Actions > 0 {
-				if rl.IsKeyPressed(rl.KeyB) {
-					if tile, ok := getTile(state.SelectionMode.Pos); ok {
-						tile.Block = false
-						tile.Texture = appState.RenderAssets.TileTextures[rendering.TILE_FLOOR_STONE]
-						state.Player.Turn.Actions--
-					}
-				}
-				if rl.IsKeyPressed(rl.KeyA) {
-					fmt.Print("Attacked \n")
-				}
-			}
-		}
-
-		if utils.DebugMode {
-			if rl.IsKeyPressed(rl.KeyF1) {
-				state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
-			}
-		}
-
-		if rl.IsKeyPressed(rl.KeyEnter) {
-			state.Player.Turn.Done = true
-		}
-
-		state.Camera.Target.X = float32(state.Player.Pos.X)
-		state.Camera.Target.Y = float32(state.Player.Pos.Y)
-
+		//*
+		//*	Filter out the tiles that are visible to the player
+		//*	If the the tile is visible push it to a separate array
+		//*	that the renderer can use to save time not going through all this at render time
+		//*
 		var tilesToDraw []*Tile
 
 		for _, tile_row := range state.Map {
 			for _, tile := range tile_row {
 				if tile != nil {
-					// Check if tile coordinates are in player visibility range
-					// If not don't bother rendering it
+					//! Check if tile coordinates are in the player's visibility range
+					//! If not, don't bother adding it for render
 					if lightLevel, ok := checkTileVisibility(state.Player, tile); ok {
 						tile.LightLevel = lightLevel
 						tilesToDraw = append(tilesToDraw, tile)
@@ -229,55 +140,31 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 
 		rl.BeginDrawing()
 
-		//
-		//	Draw 2D objects
-		//	Characters, tiles etc.
-		//
+		//*
+		//*	Draw 2D objects
+		//*	Characters, tiles etc.
+		//*
 		rl.BeginMode2D(*state.Camera)
 		rl.ClearBackground(rl.Black)
 
 		for _, tile := range tilesToDraw {
-			colour := rl.White
-			colour.A = tile.LightLevel
-			rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+			tile.Draw()
 
 			if state.DebugDisplay.Enabled {
 				handleTileDebugDisplay(tile)
 			}
 		}
 
-		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
-		if state.SelectionMode.Using {
-			alpha := float32((math.Cos(3.0*float64(rl.GetTime())) + 1) * 0.5)
-			rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_SELECTION_MARK], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
-		}
+		state.Player.Draw()
+		drawSelectionCursor()
 
 		rl.EndMode2D()
 
-		//
-		//	Draw UI stuff
-		//
+		//*
+		//*	UI Section
+		//*
+		drawUI()
 
-		if !state.Player.Turn.Done {
-			for h := 0; h < int(state.Player.Turn.Actions); h++ {
-				rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_ACTION_MARK], state.AppState.RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
-			}
-
-			for m := 0; m < int(state.Player.Turn.Movement); m++ {
-				rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_MOVEMENT_MARK], state.AppState.RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
-			}
-
-			if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {
-				utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
-			}
-		} else {
-			utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
-		}
-
-		if state.DebugDisplay.Enabled {
-			drawDebugSettings()
-			drawDebugInfo()
-		}
 		rl.EndDrawing()
 	}
 }
@@ -380,109 +267,6 @@ func generateMap() string {
 
 	log.Println("Map generation finished in ", time.Since(t))
 	return mapstring
-}
-
-func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile {
-	switch c {
-	case "@":
-		return Tile{
-			Texture: (*texturelist)[2],
-			Pos:     pos,
-			Block:   true,
-		}
-	case "_":
-		ti := 1
-		if rand.Float32() < 0.01 {
-			ti = 6
-		}
-		return Tile{
-			Texture: (*texturelist)[ti],
-			Pos:     pos,
-			Block:   false,
-		}
-	case "!":
-		return Tile{
-			Texture: (*texturelist)[3],
-			Pos:     pos,
-			Block:   true,
-		}
-	case "P":
-		return Tile{
-			Texture: (*texturelist)[4],
-			Pos:     pos,
-			Block:   false,
-		}
-	case "-":
-		return Tile{
-			Texture: (*texturelist)[5],
-			Pos:     pos,
-			Block:   false,
-		}
-	default:
-		return Tile{
-			Texture: (*texturelist)[0],
-			Pos:     pos,
-			Block:   false,
-		}
-	}
-}
-
-func movePlayer(player *Player, tiles *[][]*Tile) {
-
-	if player.Turn.Movement > 0 {
-		p_x := player.Pos.X
-		p_y := player.Pos.Y
-
-		if rl.IsKeyPressed(rl.KeyLeft) {
-			p_x -= TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyRight) {
-			p_x += TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyUp) {
-			p_y -= TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyDown) {
-			p_y += TILE_SIZE
-		}
-
-		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
-
-		if tile, ok := getTile(npos); ok {
-			if tile.Block {
-				return
-			}
-		} else {
-			return
-		}
-
-		if p_x != player.Pos.X || p_y != player.Pos.Y {
-			player.Pos.X = p_x
-			player.Pos.Y = p_y
-			player.Turn.Movement--
-		}
-	}
-}
-
-func moveSelectionCursor(selection *SelectionMode) {
-	s_x := selection.Pos.X
-	s_y := selection.Pos.Y
-
-	if rl.IsKeyPressed(rl.KeyLeft) {
-		s_x -= TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyRight) {
-		s_x += TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyUp) {
-		s_y -= TILE_SIZE
-	}
-	if rl.IsKeyPressed(rl.KeyDown) {
-		s_y += TILE_SIZE
-	}
-
-	selection.Pos.X = s_x
-	selection.Pos.Y = s_y
 }
 
 func getTile(pos utils.IVector2) (*Tile, bool) {
