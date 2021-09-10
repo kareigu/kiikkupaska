@@ -44,6 +44,14 @@ type IVector2 struct {
 	Y int32
 }
 
+/* type I_IVector2 interface {
+	ToVec2() rl.Vector2
+} */
+
+func (ivec IVector2) ToVec2() rl.Vector2 {
+	return rl.Vector2{X: float32(ivec.X), Y: float32(ivec.Y)}
+}
+
 var appState *State
 var DebugMode bool
 

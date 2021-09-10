@@ -21,7 +21,7 @@ type GameState struct {
 	AppState      *utils.State
 	Camera        *rl.Camera2D
 	Player        *Player
-	Map           map[utils.IVector2]*Tile
+	Map           [][]*Tile
 	SelectionMode SelectionMode
 	DebugDisplay  DebugDisplayData
 
@@ -153,7 +153,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			state.tempTimeSinceTurn = 0.0
 		} else {
 			state.SelectionMode.Using = false
-			if state.tempTimeSinceTurn > 5.0 {
+			if state.tempTimeSinceTurn > 2.0 {
 				state.Player.StartTurn()
 			} else {
 				state.tempTimeSinceTurn += rl.GetFrameTime()
@@ -185,10 +185,11 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 		if state.SelectionMode.Using {
 			if state.Player.Turn.Actions > 0 {
 				if rl.IsKeyPressed(rl.KeyB) {
-					tile := state.Map[state.SelectionMode.Pos]
-					tile.Block = false
-					tile.Texture = (*tile_textures)[1]
-					state.Player.Turn.Actions--
+					if tile, ok := getTile(state.SelectionMode.Pos); ok {
+						tile.Block = false
+						tile.Texture = (*tile_textures)[1]
+						state.Player.Turn.Actions--
+					}
 				}
 				if rl.IsKeyPressed(rl.KeyA) {
 					fmt.Print("Attacked \n")
@@ -218,14 +219,18 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 		rl.BeginMode2D(*state.Camera)
 		rl.ClearBackground(rl.Black)
 
-		for _, tile := range state.Map {
-			// Check if tile coordinates are in player visibility range
-			// If not don't bother rendering it
-			if colour, ok := checkTileVisibility(state.Player, tile); ok {
-				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+		for _, tile_row := range state.Map {
+			for _, tile := range tile_row {
+				if tile != nil {
+					// Check if tile coordinates are in player visibility range
+					// If not don't bother rendering it
+					if colour, ok := checkTileVisibility(state.Player, tile); ok {
+						rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
 
-				if state.DebugDisplay.Enabled {
-					handleTileDebugDisplay(tile, colour)
+						if state.DebugDisplay.Enabled {
+							handleTileDebugDisplay(tile, colour)
+						}
+					}
 				}
 			}
 		}
@@ -266,10 +271,14 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 	}
 }
 
-func generateTiles(tile_textures *[]rl.Texture2D) map[utils.IVector2]*Tile {
+func generateTiles(tile_textures *[]rl.Texture2D) [][]*Tile {
+	const tileArrDimensions = 1000
 	mapstring := generateMap()
-	tiles := make(map[utils.IVector2]*Tile)
 	player := state.Player
+	tiles := make([][]*Tile, tileArrDimensions)
+	for i := 0; i < tileArrDimensions; i++ {
+		tiles[i] = make([]*Tile, tileArrDimensions)
+	}
 
 	for y, row := range strings.Split(mapstring, "\n") {
 		for x, char := range strings.Split(row, "") {
@@ -288,7 +297,7 @@ func generateTiles(tile_textures *[]rl.Texture2D) map[utils.IVector2]*Tile {
 			}
 			pos := utils.IVector2{X: pos_x, Y: pos_y}
 			tile := charToTile(tile_textures, char, pos)
-			tiles[pos] = &tile
+			tiles[x][y] = &tile
 		}
 	}
 	utils.DebugPrint(mapstring)
@@ -309,15 +318,11 @@ func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
 }
 
 func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
-	tile_vec := IVec2ToVec2(tile.Pos)
-	player_vec := IVec2ToVec2(player.Pos)
+	tile_vec := tile.Pos.ToVec2()
+	player_vec := player.Pos.ToVec2()
 	distance := rl.Vector2Distance(tile_vec, player_vec) / float32(TILE_SIZE)
 
 	return distance
-}
-
-func IVec2ToVec2(ivec utils.IVector2) rl.Vector2 {
-	return rl.Vector2{X: float32(ivec.X), Y: float32(ivec.Y)}
 }
 
 func reverseRange(v float32) float32 {
@@ -411,7 +416,7 @@ func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile 
 	}
 }
 
-func movePlayer(player *Player, tiles *map[utils.IVector2]*Tile) {
+func movePlayer(player *Player, tiles *[][]*Tile) {
 
 	if player.Turn.Movement > 0 {
 		p_x := player.Pos.X
@@ -432,7 +437,7 @@ func movePlayer(player *Player, tiles *map[utils.IVector2]*Tile) {
 
 		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
 
-		if tile, ok := (*tiles)[npos]; ok {
+		if tile, ok := getTile(npos); ok {
 			if tile.Block {
 				return
 			}
@@ -467,4 +472,15 @@ func moveSelectionCursor(selection *SelectionMode) {
 
 	selection.Pos.X = s_x
 	selection.Pos.Y = s_y
+}
+
+func getTile(pos utils.IVector2) (*Tile, bool) {
+	x := pos.X / TILE_SIZE
+	y := pos.Y / TILE_SIZE
+
+	if tile := state.Map[x][y]; tile != nil {
+		return tile, true
+	} else {
+		return nil, false
+	}
 }

@@ -47,10 +47,15 @@ func drawDebugSettings() {
 
 func drawDebugInfo() {
 	var tile *Tile
+	var sourcePos utils.IVector2
 	if state.SelectionMode.Using {
-		tile = state.Map[state.SelectionMode.Pos]
+		sourcePos = state.SelectionMode.Pos
 	} else {
-		tile = state.Map[state.Player.Pos]
+		sourcePos = state.Player.Pos
+	}
+
+	if t, ok := getTile(sourcePos); ok {
+		tile = t
 	}
 
 	background := rl.NewRectangle(50.0, 280.0, 250.0, 180.0)
