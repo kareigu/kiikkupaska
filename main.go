@@ -33,12 +33,11 @@ func init() {
 
 	debugMode = *debugFlag
 	state = utils.State{
-		Loading:       false,
-		View:          utils.MAIN_MENU,
-		RES:           utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
-		Music:         *musicFlag,
-		MainFont:      rl.GetFontDefault(),
-		SecondaryFont: rl.GetFontDefault(),
+		Loading:      false,
+		View:         utils.MAIN_MENU,
+		RES:          utils.IVector2{X: int32(*widthFlag), Y: int32(*heightFlag)},
+		Music:        *musicFlag,
+		RenderAssets: nil,
 	}
 }
 
@@ -50,11 +49,7 @@ func main() {
 	rl.SetExitKey(rl.KeyF4)
 
 	utils.InitUtils(&state, debugMode)
-	tile_textures := rendering.LoadTileTextures()
-	character_textures := rendering.LoadCharacterTextures()
-	ui_sprites := rendering.LoadUISprites()
-	state.MainFont, state.SecondaryFont = rendering.LoadFonts()
-	rendering.LoadGUIStylesheet()
+	state.RenderAssets = rendering.LoadAssets()
 	rl.InitAudioDevice()
 
 	var gameState *game.GameState
@@ -136,21 +131,12 @@ func main() {
 				state.View = utils.MAIN_MENU
 			}
 		case utils.IN_GAME:
-			game.GameUpdate(&state, &gameState, &character_textures, &tile_textures, &ui_sprites)
+			game.GameUpdate(&state, &gameState)
 		}
 	}
 
-	cleanup(&tile_textures, &character_textures)
+	rendering.Cleanup()
 
 	rl.CloseAudioDevice()
 	rl.CloseWindow()
-}
-
-func cleanup(tile_textures *[]rl.Texture2D, character_textures *[]rl.Texture2D) {
-	for _, t := range *tile_textures {
-		rl.UnloadTexture(t)
-	}
-	for _, t := range *character_textures {
-		rl.UnloadTexture(t)
-	}
 }

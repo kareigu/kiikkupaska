@@ -70,7 +70,7 @@ func drawDebugInfo() {
 	rl.DrawRectangleRec(background, rl.DarkGray)
 
 	rl.DrawTextRec(
-		state.AppState.SecondaryFont,
+		state.AppState.RenderAssets.SecondaryFont,
 		data,
 		background,
 		24.0,

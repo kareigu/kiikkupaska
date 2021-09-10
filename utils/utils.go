@@ -31,12 +31,19 @@ const fontsFolder = assetsFolder + "fonts/"
 const musicFolder = assetsFolder + "music/"
 
 type State struct {
-	Loading       bool
-	View          int
-	RES           IVector2
-	Music         bool
-	MainFont      rl.Font
-	SecondaryFont rl.Font
+	Loading      bool
+	View         int
+	RES          IVector2
+	Music        bool
+	RenderAssets *RenderingAssets
+}
+
+type RenderingAssets struct {
+	TileTextures     []rl.Texture2D
+	CharacterSprites []rl.Texture2D
+	UISprites        []rl.Texture2D
+	MainFont         rl.Font
+	SecondaryFont    rl.Font
 }
 
 type IVector2 struct {
@@ -90,5 +97,5 @@ func DrawButton(pos rl.Vector2, text string) bool {
 }
 
 func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {
-	rl.DrawTextEx(appState.MainFont, text, pos, size, 1.0, colour)
+	rl.DrawTextEx(appState.RenderAssets.MainFont, text, pos, size, 1.0, colour)
 }

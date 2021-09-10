@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"rendering"
 	"strings"
 	"time"
 	"utils"
@@ -82,8 +83,8 @@ func (player *Player) StartTurn() {
 
 var state GameState
 
-func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D) *GameState {
-	player, cam := initPlayerAndCam(appState, character_textures)
+func InitGame(appState *utils.State) *GameState {
+	player, cam := initPlayerAndCam(appState, &appState.RenderAssets.CharacterSprites)
 	state = GameState{
 		AppState: appState,
 		Player:   player,
@@ -99,7 +100,7 @@ func InitGame(appState *utils.State, character_textures *[]rl.Texture2D, tile_te
 		},
 		tempTimeSinceTurn: 0.0,
 	}
-	state.Map = generateTiles(tile_textures)
+	state.Map = generateTiles(&appState.RenderAssets.TileTextures)
 	return &state
 }
 
@@ -137,10 +138,10 @@ func initPlayerAndCam(state *utils.State, character_textures *[]rl.Texture2D) (*
 	return &player, &cam
 }
 
-func GameUpdate(appState *utils.State, gameState **GameState, character_textures *[]rl.Texture2D, tile_textures *[]rl.Texture2D, ui_sprites *[]rl.Texture2D) {
+func GameUpdate(appState *utils.State, gameState **GameState) {
 	if state.AppState == nil {
 		appState.Loading = true
-		*gameState = InitGame(appState, character_textures, tile_textures)
+		*gameState = InitGame(appState)
 		appState.Loading = false
 	} else {
 
@@ -187,7 +188,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 				if rl.IsKeyPressed(rl.KeyB) {
 					if tile, ok := getTile(state.SelectionMode.Pos); ok {
 						tile.Block = false
-						tile.Texture = (*tile_textures)[1]
+						tile.Texture = appState.RenderAssets.TileTextures[rendering.TILE_FLOOR_STONE]
 						state.Player.Turn.Actions--
 					}
 				}
@@ -238,7 +239,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 		rl.DrawTexture(state.Player.Sprite, state.Player.Pos.X, state.Player.Pos.Y, rl.White)
 		if state.SelectionMode.Using {
 			alpha := float32((math.Cos(3.0*float64(rl.GetTime())) + 1) * 0.5)
-			rl.DrawTexture((*ui_sprites)[2], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
+			rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_SELECTION_MARK], state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
 		}
 
 		rl.EndMode2D()
@@ -249,11 +250,11 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 
 		if !state.Player.Turn.Done {
 			for h := 0; h < int(state.Player.Turn.Actions); h++ {
-				rl.DrawTexture((*ui_sprites)[0], state.AppState.RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
+				rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_ACTION_MARK], state.AppState.RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
 			}
 
 			for m := 0; m < int(state.Player.Turn.Movement); m++ {
-				rl.DrawTexture((*ui_sprites)[1], state.AppState.RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
+				rl.DrawTexture(appState.RenderAssets.UISprites[rendering.SPRITE_MOVEMENT_MARK], state.AppState.RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
 			}
 
 			if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {

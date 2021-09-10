@@ -7,40 +7,89 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTileTextures() []rl.Texture2D {
+var Assets utils.RenderingAssets
+
+const (
+	TILE_MISSING        = iota
+	TILE_FLOOR_STONE    = iota
+	TILE_WALL_STONE     = iota
+	TILE_WALL_MOSS      = iota
+	TILE_FLOOR_SPAWN    = iota
+	TILE_FLOOR_OBS      = iota
+	TILE_FLOOR_STONE_BL = iota
+)
+
+func LoadAssets() *utils.RenderingAssets {
+	main, sec := loadFonts()
+	Assets = utils.RenderingAssets{
+		TileTextures:     loadTileTextures(),
+		CharacterSprites: loadCharacterSprites(),
+		UISprites:        loadUISprites(),
+		MainFont:         main,
+		SecondaryFont:    sec,
+	}
+	loadGUIStylesheet()
+	return &Assets
+}
+
+func Cleanup() {
+	for _, t := range Assets.TileTextures {
+		rl.UnloadTexture(t)
+	}
+	for _, t := range Assets.CharacterSprites {
+		rl.UnloadTexture(t)
+	}
+	for _, t := range Assets.UISprites {
+		rl.UnloadTexture(t)
+	}
+	rl.UnloadFont(Assets.MainFont)
+	rl.UnloadFont(Assets.SecondaryFont)
+}
+
+func loadTileTextures() []rl.Texture2D {
 	texturelist := make([]rl.Texture2D, 7)
-	texturelist[0] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "missing_tile.png"))
-	texturelist[1] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile.png"))
-	texturelist[2] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile.png"))
-	texturelist[3] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_moss_tile.png"))
-	texturelist[4] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_spawn_tile.png"))
-	texturelist[5] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_obs_tile.png"))
-	texturelist[6] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile_bl.png"))
+	texturelist[TILE_MISSING] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "missing_tile.png"))
+	texturelist[TILE_FLOOR_STONE] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile.png"))
+	texturelist[TILE_WALL_STONE] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile.png"))
+	texturelist[TILE_WALL_MOSS] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_moss_tile.png"))
+	texturelist[TILE_FLOOR_SPAWN] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_spawn_tile.png"))
+	texturelist[TILE_FLOOR_OBS] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_obs_tile.png"))
+	texturelist[TILE_FLOOR_STONE_BL] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile_bl.png"))
 
 	return texturelist
 }
 
-func LoadCharacterTextures() []rl.Texture2D {
+const (
+	PLAYER_IDLE = iota
+)
+
+func loadCharacterSprites() []rl.Texture2D {
 	texturelist := make([]rl.Texture2D, 1)
-	texturelist[0] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "player_idle.png"))
+	texturelist[PLAYER_IDLE] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "player_idle.png"))
 
 	return texturelist
 }
 
-func LoadUISprites() []rl.Texture2D {
+const (
+	SPRITE_ACTION_MARK    = iota
+	SPRITE_MOVEMENT_MARK  = iota
+	SPRITE_SELECTION_MARK = iota
+)
+
+func loadUISprites() []rl.Texture2D {
 	texturelist := make([]rl.Texture2D, 3)
-	texturelist[0] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "action_mark.png"))
-	texturelist[1] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "movement_mark.png"))
-	texturelist[2] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "selection_mark.png"))
+	texturelist[SPRITE_ACTION_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "action_mark.png"))
+	texturelist[SPRITE_MOVEMENT_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "movement_mark.png"))
+	texturelist[SPRITE_SELECTION_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "selection_mark.png"))
 
 	return texturelist
 }
 
-func LoadGUIStylesheet() {
+func loadGUIStylesheet() {
 	rgui.LoadGuiStyle(utils.GetAssetPath(utils.STYLESHEET, "zahnrad.style"))
 }
 
-func LoadFonts() (rl.Font, rl.Font) {
+func loadFonts() (rl.Font, rl.Font) {
 	mainFont := rl.LoadFont(utils.GetAssetPath(utils.FONT, "setback.png"))
 	rl.GenTextureMipmaps(&mainFont.Texture)
 	rl.SetTextureFilter(mainFont.Texture, rl.FilterPoint)
