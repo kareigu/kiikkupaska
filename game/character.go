@@ -7,13 +7,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type Player struct {
-	Pos   utils.IVector2
-	State int
-	Stats Stats
-	Turn  TurnData
-}
-
 type TurnData struct {
 	Movement uint8
 	Actions  uint8
@@ -34,6 +27,13 @@ type Character interface {
 	StartTurn()
 }
 
+type Player struct {
+	Pos   utils.IVector2
+	State int
+	Stats Stats
+	Turn  TurnData
+}
+
 func (player *Player) GetTurn() *TurnData {
 	return &player.Turn
 }
@@ -51,4 +51,25 @@ func (player *Player) StartTurn() {
 func (player *Player) Draw() {
 	texture := rendering.GetPlayerSprite(player.State)
 	rl.DrawTexture(*texture, player.Pos.X, player.Pos.Y, rl.White)
+}
+
+type Enemy struct {
+	Pos   utils.IVector2
+	State int
+	Stats Stats
+	Turn  TurnData
+}
+
+func (enemy *Enemy) GetTurn() *TurnData {
+	return &enemy.Turn
+}
+
+func (enemy *Enemy) GetStats() *Stats {
+	return &enemy.Stats
+}
+
+func (enemy *Enemy) StartTurn() {
+	enemy.Turn.Actions = 3
+	enemy.Turn.Movement = enemy.Stats.Movement
+	enemy.Turn.Done = false
 }
