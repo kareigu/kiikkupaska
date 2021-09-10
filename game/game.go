@@ -33,26 +33,6 @@ type SelectionMode struct {
 	Pos   utils.IVector2
 }
 
-type TurnData struct {
-	Movement uint8
-	Actions  uint8
-	Done     bool
-}
-
-type Stats struct {
-	Movement   uint8
-	Visibility uint8
-	Vitality   uint8
-	Strength   uint8
-	Dexterity  uint8
-}
-
-type Character interface {
-	GetTurn() *TurnData
-	GetStats() *Stats
-	StartTurn()
-}
-
 var state GameState
 
 func InitGame(appState *utils.State) *GameState {

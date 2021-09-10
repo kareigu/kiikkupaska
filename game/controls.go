@@ -29,14 +29,6 @@ func HandleControls() {
 		state.SelectionMode.Using = !state.SelectionMode.Using
 	}
 
-	if rl.IsKeyPressed(rl.KeyI) {
-		state.Player.Stats.Visibility++
-	}
-
-	if rl.IsKeyPressed(rl.KeyK) {
-		state.Player.Stats.Visibility--
-	}
-
 	if rl.IsKeyPressed(rl.KeyM) || rl.IsKeyPressed(rl.KeyEscape) {
 		state.AppState.View = utils.PAUSED
 	}
@@ -64,6 +56,14 @@ func HandleControls() {
 	if utils.DebugMode {
 		if rl.IsKeyPressed(rl.KeyF1) {
 			state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
+		}
+
+		if rl.IsKeyPressed(rl.KeyI) {
+			state.Player.Stats.Visibility++
+		}
+
+		if rl.IsKeyPressed(rl.KeyK) {
+			state.Player.Stats.Visibility--
 		}
 	}
 

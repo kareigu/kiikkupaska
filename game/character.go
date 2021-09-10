@@ -14,6 +14,26 @@ type Player struct {
 	Turn  TurnData
 }
 
+type TurnData struct {
+	Movement uint8
+	Actions  uint8
+	Done     bool
+}
+
+type Stats struct {
+	Movement   uint8
+	Visibility uint8
+	Vitality   uint8
+	Strength   uint8
+	Dexterity  uint8
+}
+
+type Character interface {
+	GetTurn() *TurnData
+	GetStats() *Stats
+	StartTurn()
+}
+
 func (player *Player) GetTurn() *TurnData {
 	return &player.Turn
 }
