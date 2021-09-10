@@ -35,9 +35,10 @@ type SelectionMode struct {
 }
 
 type Tile struct {
-	Texture rl.Texture2D
-	Pos     utils.IVector2
-	Block   bool
+	Texture    rl.Texture2D
+	Pos        utils.IVector2
+	Block      bool
+	LightLevel uint8
 }
 
 type Player struct {
@@ -211,6 +212,21 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		state.Camera.Target.X = float32(state.Player.Pos.X)
 		state.Camera.Target.Y = float32(state.Player.Pos.Y)
 
+		var tilesToDraw []*Tile
+
+		for _, tile_row := range state.Map {
+			for _, tile := range tile_row {
+				if tile != nil {
+					// Check if tile coordinates are in player visibility range
+					// If not don't bother rendering it
+					if lightLevel, ok := checkTileVisibility(state.Player, tile); ok {
+						tile.LightLevel = lightLevel
+						tilesToDraw = append(tilesToDraw, tile)
+					}
+				}
+			}
+		}
+
 		rl.BeginDrawing()
 
 		//
@@ -220,19 +236,13 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		rl.BeginMode2D(*state.Camera)
 		rl.ClearBackground(rl.Black)
 
-		for _, tile_row := range state.Map {
-			for _, tile := range tile_row {
-				if tile != nil {
-					// Check if tile coordinates are in player visibility range
-					// If not don't bother rendering it
-					if colour, ok := checkTileVisibility(state.Player, tile); ok {
-						rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
+		for _, tile := range tilesToDraw {
+			colour := rl.White
+			colour.A = tile.LightLevel
+			rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
 
-						if state.DebugDisplay.Enabled {
-							handleTileDebugDisplay(tile, colour)
-						}
-					}
-				}
+			if state.DebugDisplay.Enabled {
+				handleTileDebugDisplay(tile)
 			}
 		}
 
@@ -305,16 +315,16 @@ func generateTiles(tile_textures *[]rl.Texture2D) [][]*Tile {
 	return tiles
 }
 
-func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
+func checkTileVisibility(player *Player, tile *Tile) (uint8, bool) {
 	visrange := int32(player.Stats.Visibility) * TILE_SIZE
 	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
-		return rl.Black, false
+		return 0, false
 	} else {
 		distance_alpha := float32(getTileDistanceToPlayer(player, tile)) / float32(player.Stats.Visibility)
 		colour := rl.ColorAlpha(rl.White, distance_alpha)
 		// Reverse alpha to make closer tiles brighter instead of darker
 		colour.A = uint8(math.Abs(float64(colour.A) - 255.0))
-		return colour, true
+		return colour.A, true
 	}
 }
 

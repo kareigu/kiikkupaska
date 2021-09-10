@@ -18,11 +18,11 @@ const (
 	DD_TILE_DISTANCE_FROM_PLAYER = iota
 )
 
-func handleTileDebugDisplay(tile *Tile, colour rl.Color) {
+func handleTileDebugDisplay(tile *Tile) {
 	switch state.DebugDisplay.TileDisplayMode {
 	case DD_TILE_LIGHT:
 		//! Tile light debug display
-		rl.DrawText(fmt.Sprintf("%d", colour.A), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
+		rl.DrawText(fmt.Sprintf("%d", tile.LightLevel), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
 	case DD_TILE_DISTANCE_FROM_PLAYER:
 		//! Tile distance debug display
 		dist := getTileDistanceToPlayer(state.Player, tile)
