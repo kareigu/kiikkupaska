@@ -22,6 +22,15 @@ func (tile *Tile) Draw() {
 	rl.DrawTexture(*texture, tile.Pos.X, tile.Pos.Y, colour)
 }
 
+func (tile *Tile) Destroy() bool {
+	if tile.Block {
+		tile.Type = rendering.TILE_FLOOR_STONE
+		tile.Block = false
+		return true
+	}
+	return false
+}
+
 func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile {
 	switch c {
 	case "@":

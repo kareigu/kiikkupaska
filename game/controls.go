@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"rendering"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -51,9 +50,9 @@ func HandleControls() {
 		if state.Player.Turn.Actions > 0 {
 			if rl.IsKeyPressed(rl.KeyB) {
 				if tile, ok := getTile(state.SelectionMode.Pos); ok {
-					tile.Block = false
-					tile.Type = rendering.TILE_FLOOR_STONE
-					state.Player.Turn.Actions--
+					if tile.Destroy() {
+						state.Player.Turn.Actions--
+					}
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyV) {
