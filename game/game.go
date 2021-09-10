@@ -20,7 +20,7 @@ type GameState struct {
 	AppState      *utils.State
 	Camera        *rl.Camera2D
 	Player        *Player
-	Map           *map[utils.IVector2]Tile
+	Map           map[utils.IVector2]*Tile
 	SelectionMode SelectionMode
 	DebugDisplay  DebugDisplayData
 
@@ -147,7 +147,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			if state.SelectionMode.Using {
 				moveSelectionCursor(&state.SelectionMode)
 			} else {
-				movePlayer(state.Player, state.Map)
+				movePlayer(state.Player, &state.Map)
 			}
 			state.tempTimeSinceTurn = 0.0
 		} else {
@@ -175,6 +175,17 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			state.AppState.View = utils.PAUSED
 		}
 
+		if state.SelectionMode.Using {
+			if state.Player.Turn.Actions > 0 {
+				if rl.IsKeyPressed(rl.KeyA) {
+					tile := state.Map[state.SelectionMode.Pos]
+					tile.Block = false
+					tile.Texture = (*tile_textures)[1]
+					state.Player.Turn.Actions--
+				}
+			}
+		}
+
 		if utils.DebugMode {
 			if rl.IsKeyPressed(rl.KeyF1) {
 				state.DebugDisplay.Enabled = !state.DebugDisplay.Enabled
@@ -197,14 +208,14 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 		rl.BeginMode2D(*state.Camera)
 		rl.ClearBackground(rl.Black)
 
-		for _, tile := range *state.Map {
+		for _, tile := range state.Map {
 			// Check if tile coordinates are in player visibility range
 			// If not don't bother rendering it
-			if colour, ok := checkTileVisibility(state.Player, &tile); ok {
+			if colour, ok := checkTileVisibility(state.Player, tile); ok {
 				rl.DrawTexture(tile.Texture, tile.Pos.X, tile.Pos.Y, colour)
 
 				if state.DebugDisplay.Enabled {
-					handleTileDebugDisplay(&tile, colour)
+					handleTileDebugDisplay(tile, colour)
 				}
 			}
 		}
@@ -245,9 +256,9 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 	}
 }
 
-func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
+func generateTiles(tile_textures *[]rl.Texture2D) map[utils.IVector2]*Tile {
 	mapstring := generateMap()
-	tiles := make(map[utils.IVector2]Tile)
+	tiles := make(map[utils.IVector2]*Tile)
 	player := state.Player
 
 	for y, row := range strings.Split(mapstring, "\n") {
@@ -267,11 +278,11 @@ func generateTiles(tile_textures *[]rl.Texture2D) *map[utils.IVector2]Tile {
 			}
 			pos := utils.IVector2{X: pos_x, Y: pos_y}
 			tile := charToTile(tile_textures, char, pos)
-			tiles[pos] = tile
+			tiles[pos] = &tile
 		}
 	}
 	utils.DebugPrint(mapstring)
-	return &tiles
+	return tiles
 }
 
 func checkTileVisibility(player *Player, tile *Tile) (rl.Color, bool) {
@@ -390,7 +401,7 @@ func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile 
 	}
 }
 
-func movePlayer(player *Player, tiles *map[utils.IVector2]Tile) {
+func movePlayer(player *Player, tiles *map[utils.IVector2]*Tile) {
 
 	if player.Turn.Movement > 0 {
 		p_x := player.Pos.X
