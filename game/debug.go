@@ -32,15 +32,15 @@ func handleTileDebugDisplay(tile *Tile, colour rl.Color) {
 }
 
 func drawDebugSettings() {
-	if utils.DrawButton(rl.NewVector2(50.0, 40.0), "No display") {
+	if utils.DrawButton(rl.NewVector2(50.0, 100.0), "No display") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 70.0), "Tile light level") {
+	if utils.DrawButton(rl.NewVector2(50.0, 130.0), "Tile light level") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 100.0), "Tile distance from player") {
+	if utils.DrawButton(rl.NewVector2(50.0, 160.0), "Tile distance from player") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 }
@@ -78,4 +78,7 @@ func drawDebugInfo() {
 		true,
 		rl.White,
 	)
+
+	rl.DrawText(fmt.Sprintf("%.2f fps", rl.GetFPS()), 50, 20, 24, rl.RayWhite)
+	rl.DrawText(fmt.Sprintf("%.4f ms", rl.GetFrameTime()*1000.0), 50, 50, 24, rl.RayWhite)
 }
