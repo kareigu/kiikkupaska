@@ -29,15 +29,8 @@ func placeEnemies(tiles [][]*Tile) []*Enemy {
 		for _, tile := range row {
 			if tile != nil && tile.Type == rendering.TILE_FLOOR_SPAWN && tile.Pos != state.Player.Pos {
 				if rand.Float32() < ENEMY_SPAWN_RATE {
-					stats := DefaultGoblinStats()
-					new_enemy := Enemy{
-						Pos:    tile.Pos,
-						Health: float32(stats.Vitality) * 2.63,
-						State:  rendering.GOBLIN_IDLE,
-						Stats:  stats,
-						Turn:   DefaultEnemyTurn(),
-					}
-					enemies = append(enemies, &new_enemy)
+					new_enemy := CreateRandomEnemy(tile.Pos)
+					enemies = append(enemies, new_enemy)
 				}
 			}
 		}

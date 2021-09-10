@@ -110,6 +110,18 @@ func (enemy *Enemy) DistanceToPlayer() float32 {
 	return distance
 }
 
+func CreateRandomEnemy(pos utils.IVector2) *Enemy {
+	stats := DefaultGoblinStats()
+	new_enemy := Enemy{
+		Pos:    pos,
+		Health: float32(stats.Vitality) * 2.63,
+		State:  rendering.GOBLIN_IDLE,
+		Stats:  stats,
+		Turn:   DefaultEnemyTurn(),
+	}
+	return &new_enemy
+}
+
 func DefaultEnemyTurn() TurnData {
 	return TurnData{
 		Movement: 0,
