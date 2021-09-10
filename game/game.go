@@ -175,6 +175,11 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			state.AppState.View = utils.PAUSED
 		}
 
+		zoomMult := float32(rl.GetMouseWheelMove()) * 0.1
+		if state.Camera.Zoom+zoomMult > 0.2 {
+			state.Camera.Zoom += zoomMult
+		}
+
 		if state.SelectionMode.Using {
 			if state.Player.Turn.Actions > 0 {
 				if rl.IsKeyPressed(rl.KeyA) {
