@@ -69,16 +69,18 @@ func GetTile(tileType int) *rl.Texture2D {
 
 const (
 	PLAYER_IDLE = iota
+	GOBLIN_IDLE = iota
 )
 
 func loadCharacterSprites() []rl.Texture2D {
-	texturelist := make([]rl.Texture2D, 1)
+	texturelist := make([]rl.Texture2D, 2)
 	texturelist[PLAYER_IDLE] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "player_idle.png"))
+	texturelist[GOBLIN_IDLE] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "goblin_idle.png"))
 
 	return texturelist
 }
 
-func GetPlayerSprite(state int) *rl.Texture2D {
+func GetCharacterSprite(state int) *rl.Texture2D {
 	if tex := &Assets.CharacterSprites[state]; tex != nil {
 		return tex
 	} else {

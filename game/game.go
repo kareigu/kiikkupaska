@@ -1,16 +1,11 @@
 package game
 
 import (
-	"log"
 	"math"
-	"math/rand"
 	"rendering"
-	"strings"
-	"time"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
-	simplex "github.com/ojrac/opensimplex-go"
 )
 
 const TILE_SIZE int32 = 32
@@ -22,6 +17,7 @@ type GameState struct {
 	Camera        *rl.Camera2D
 	Player        *Player
 	Map           [][]*Tile
+	Enemies       []*Enemy
 	SelectionMode SelectionMode
 	DebugDisplay  DebugDisplayData
 
@@ -52,7 +48,7 @@ func InitGame(appState *utils.State) *GameState {
 		},
 		tempTimeSinceTurn: 0.0,
 	}
-	state.Map = generateTiles(&appState.RenderAssets.TileTextures)
+	state.Map, state.Enemies = GenerateLevel()
 	return &state
 }
 
@@ -118,6 +114,14 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 			}
 		}
 
+		var enemiesToDraw []*Enemy
+		for _, enemy := range state.Enemies {
+			if enemy.VisibleToPlayer() {
+				enemy.LightLevel = calculateLightLevel(enemy.DistanceToPlayer(), state.Player.Stats.Visibility)
+				enemiesToDraw = append(enemiesToDraw, enemy)
+			}
+		}
+
 		rl.BeginDrawing()
 
 		//*
@@ -135,6 +139,10 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 			}
 		}
 
+		for _, enemy := range enemiesToDraw {
+			enemy.Draw()
+		}
+
 		state.Player.Draw()
 		drawSelectionCursor()
 
@@ -149,52 +157,6 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 	}
 }
 
-func generateTiles(tile_textures *[]rl.Texture2D) [][]*Tile {
-	const tileArrDimensions = 1000
-	mapstring := generateMap()
-	player := state.Player
-	tiles := make([][]*Tile, tileArrDimensions)
-	for i := 0; i < tileArrDimensions; i++ {
-		tiles[i] = make([]*Tile, tileArrDimensions)
-	}
-
-	for y, row := range strings.Split(mapstring, "\n") {
-		for x, char := range strings.Split(row, "") {
-			pos_x := int32(x) * TILE_SIZE
-			pos_y := int32(y) * TILE_SIZE
-			if char == "P" {
-				if player.Pos.X == PLAYER_OFFSET_X && player.Pos.Y == PLAYER_OFFSET_Y {
-					player.Pos.X = pos_x + PLAYER_OFFSET_X
-					player.Pos.Y = pos_y + PLAYER_OFFSET_Y
-				} else {
-					if rand.Float32() < 0.1 {
-						player.Pos.X = pos_x + PLAYER_OFFSET_X
-						player.Pos.Y = pos_y + PLAYER_OFFSET_Y
-					}
-				}
-			}
-			pos := utils.IVector2{X: pos_x, Y: pos_y}
-			tile := charToTile(tile_textures, char, pos)
-			tiles[x][y] = &tile
-		}
-	}
-	utils.DebugPrint(mapstring)
-	return tiles
-}
-
-func checkTileVisibility(player *Player, tile *Tile) (uint8, bool) {
-	visrange := int32(player.Stats.Visibility) * TILE_SIZE
-	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
-		return 0, false
-	} else {
-		distance_alpha := float32(getTileDistanceToPlayer(player, tile)) / float32(player.Stats.Visibility)
-		colour := rl.ColorAlpha(rl.White, distance_alpha)
-		// Reverse alpha to make closer tiles brighter instead of darker
-		colour.A = uint8(math.Abs(float64(colour.A) - 255.0))
-		return colour.A, true
-	}
-}
-
 func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
 	tile_vec := tile.Pos.ToVec2()
 	player_vec := player.Pos.ToVec2()
@@ -205,57 +167,4 @@ func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
 
 func reverseRange(v float32) float32 {
 	return float32(math.Abs((float64(v) - 1.0) / (0.0 - 1.0)))
-}
-
-func generateMap() string {
-	mapstring := ""
-	t := time.Now()
-	log.Println("Map generation started")
-	source := rand.NewSource(t.UnixMilli())
-	rng := rand.New(source)
-	noise := simplex.New(rng.Int63())
-	var gen_i float64 = 0.0
-	var gen_j float64 = 0.0
-
-	for gen_i <= 10.0 {
-		for gen_j <= 10.0 {
-			if gen_i == 0.0 || gen_i > 9.9 || gen_j == 0.0 || gen_j > 9.9 {
-				mapstring += "@"
-			} else {
-				val := noise.Eval2(gen_i, gen_j)
-				if val > 0.7 || val < -0.7 {
-					mapstring += "-"
-				} else if val > 0.1 {
-					mapstring += "@"
-				} else if val > -0.6 {
-					if rand.Float32() < 0.01 {
-						mapstring += "P"
-					} else {
-						mapstring += "_"
-					}
-				} else {
-					mapstring += "!"
-				}
-			}
-
-			gen_j += 0.1
-		}
-		mapstring += "\n"
-		gen_j = 0.0
-		gen_i += 0.1
-	}
-
-	log.Println("Map generation finished in ", time.Since(t))
-	return mapstring
-}
-
-func getTile(pos utils.IVector2) (*Tile, bool) {
-	x := pos.X / TILE_SIZE
-	y := pos.Y / TILE_SIZE
-
-	if tile := state.Map[x][y]; tile != nil {
-		return tile, true
-	} else {
-		return nil, false
-	}
 }

@@ -31,7 +31,7 @@ func (tile *Tile) Destroy() bool {
 	return false
 }
 
-func charToTile(texturelist *[]rl.Texture2D, c string, pos utils.IVector2) Tile {
+func charToTile(c string, pos utils.IVector2) Tile {
 	switch c {
 	case "@":
 		return Tile{
