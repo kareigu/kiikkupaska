@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -151,6 +152,7 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 			}
 			state.tempTimeSinceTurn = 0.0
 		} else {
+			state.SelectionMode.Using = false
 			if state.tempTimeSinceTurn > 5.0 {
 				state.Player.StartTurn()
 			} else {
@@ -182,11 +184,14 @@ func GameUpdate(appState *utils.State, gameState **GameState, character_textures
 
 		if state.SelectionMode.Using {
 			if state.Player.Turn.Actions > 0 {
-				if rl.IsKeyPressed(rl.KeyA) {
+				if rl.IsKeyPressed(rl.KeyB) {
 					tile := state.Map[state.SelectionMode.Pos]
 					tile.Block = false
 					tile.Texture = (*tile_textures)[1]
 					state.Player.Turn.Actions--
+				}
+				if rl.IsKeyPressed(rl.KeyA) {
+					fmt.Print("Attacked \n")
 				}
 			}
 		}
