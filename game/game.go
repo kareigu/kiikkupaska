@@ -115,7 +115,14 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		}
 
 		var enemiesToDraw []*Enemy
-		for _, enemy := range state.Enemies {
+		for i, enemy := range state.Enemies {
+			if enemy.Health <= 0.0 {
+				length := len(state.Enemies)
+				if length > 0 {
+					state.Enemies[i] = state.Enemies[length-1]
+					state.Enemies = state.Enemies[:length-1]
+				}
+			}
 			if enemy.VisibleToPlayer() {
 				enemy.LightLevel = calculateLightLevel(enemy.DistanceToPlayer(), state.Player.Stats.Visibility)
 				enemiesToDraw = append(enemiesToDraw, enemy)

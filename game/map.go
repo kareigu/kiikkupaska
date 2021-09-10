@@ -11,6 +11,8 @@ import (
 	simplex "github.com/ojrac/opensimplex-go"
 )
 
+const ENEMY_SPAWN_RATE = 0.7
+
 func GenerateLevel() ([][]*Tile, []*Enemy) {
 	t := time.Now()
 	tiles := generateTiles()
@@ -26,12 +28,14 @@ func placeEnemies(tiles [][]*Tile) []*Enemy {
 	for _, row := range tiles {
 		for _, tile := range row {
 			if tile != nil && tile.Type == rendering.TILE_FLOOR_SPAWN && tile.Pos != state.Player.Pos {
-				if rand.Float32() < 0.75 {
+				if rand.Float32() < ENEMY_SPAWN_RATE {
+					stats := DefaultGoblinStats()
 					new_enemy := Enemy{
-						Pos:   tile.Pos,
-						State: rendering.GOBLIN_IDLE,
-						Stats: DefaultGoblinStats(),
-						Turn:  DefaultEnemyTurn(),
+						Pos:    tile.Pos,
+						Health: float32(stats.Vitality) * 2.63,
+						State:  rendering.GOBLIN_IDLE,
+						Stats:  stats,
+						Turn:   DefaultEnemyTurn(),
 					}
 					enemies = append(enemies, &new_enemy)
 				}

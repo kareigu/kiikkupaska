@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -48,7 +47,11 @@ func HandleControls() {
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyV) {
-				fmt.Print("Attacked \n")
+				for _, enemy := range state.Enemies {
+					if enemy.Pos == state.SelectionMode.Pos {
+						state.Player.Attack(enemy)
+					}
+				}
 			}
 		}
 	}

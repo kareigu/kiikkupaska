@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"rendering"
 	"utils"
 
@@ -54,9 +55,17 @@ func (player *Player) Draw() {
 	rl.DrawTexture(*texture, player.Pos.X, player.Pos.Y, rl.White)
 }
 
+func (player *Player) Attack(enemy *Enemy) {
+	dmg := (float32(player.Stats.Strength) + float32(player.Stats.Dexterity)) * 1.2
+	enemy.Health -= dmg
+	player.Turn.Actions--
+	log.Printf("Attacked enemy with %.2f damage, leaving %.2f health", dmg, enemy.Health)
+}
+
 type Enemy struct {
 	Pos        utils.IVector2
 	State      int
+	Health     float32
 	LightLevel uint8
 	Stats      Stats
 	Turn       TurnData

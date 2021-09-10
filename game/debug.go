@@ -51,10 +51,11 @@ func drawDebugSettings() {
 
 	if utils.DrawButton(rl.NewVector2(50.0, 220.0), "Spawn enemy on cursor") {
 		nEnemy := Enemy{
-			Pos:   state.SelectionMode.Pos,
-			State: rendering.GOBLIN_IDLE,
-			Stats: DefaultGoblinStats(),
-			Turn:  DefaultEnemyTurn(),
+			Pos:    state.SelectionMode.Pos,
+			Health: 20.0,
+			State:  rendering.GOBLIN_IDLE,
+			Stats:  DefaultGoblinStats(),
+			Turn:   DefaultEnemyTurn(),
 		}
 		state.Enemies = append(state.Enemies, &nEnemy)
 	}
@@ -108,32 +109,36 @@ func enemiesDebugInfo() {
 	var closestEnemy *Enemy
 
 	for _, enemy := range state.Enemies {
-		enemyCount++
-		if closestEnemy == nil {
-			closestEnemy = enemy
-		} else {
-			if closestEnemy.DistanceToPlayer() > enemy.DistanceToPlayer() {
+		if enemy != nil {
+			enemyCount++
+			if closestEnemy == nil {
 				closestEnemy = enemy
+			} else {
+				if closestEnemy.DistanceToPlayer() > enemy.DistanceToPlayer() {
+					closestEnemy = enemy
+				}
 			}
 		}
 	}
 
-	pos := utils.IVector2{
-		X: closestEnemy.Pos.X / TILE_SIZE,
-		Y: closestEnemy.Pos.Y / TILE_SIZE,
+	if closestEnemy != nil {
+		pos := utils.IVector2{
+			X: closestEnemy.Pos.X / TILE_SIZE,
+			Y: closestEnemy.Pos.Y / TILE_SIZE,
+		}
+		data := fmt.Sprintf("Enemies in level: %v\nClosest Enemy: %.1f\nPos: %v\nState: %v", enemyCount, closestEnemy.DistanceToPlayer(), pos, closestEnemy.State)
+
+		background := rl.NewRectangle(50.0, state.AppState.RES.ToVec2().Y-350.0, 250.0, 180.0)
+		rl.DrawRectangleRec(background, rl.DarkGray)
+
+		rl.DrawTextRec(
+			state.AppState.RenderAssets.SecondaryFont,
+			data,
+			background,
+			24.0,
+			1.0,
+			true,
+			rl.White,
+		)
 	}
-	data := fmt.Sprintf("Enemies in level: %v\nClosest Enemy: %.1f\nPos: %v\nState: %v", enemyCount, closestEnemy.DistanceToPlayer(), pos, closestEnemy.State)
-
-	background := rl.NewRectangle(50.0, state.AppState.RES.ToVec2().Y-350.0, 250.0, 180.0)
-	rl.DrawRectangleRec(background, rl.DarkGray)
-
-	rl.DrawTextRec(
-		state.AppState.RenderAssets.SecondaryFont,
-		data,
-		background,
-		24.0,
-		1.0,
-		true,
-		rl.White,
-	)
 }
