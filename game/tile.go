@@ -69,7 +69,7 @@ func charToTile(c string, pos utils.IVector2) Tile {
 		}
 	default:
 		return Tile{
-			Type:  rendering.TILE_MISSING,
+			Type:  rendering.TILE_FLOOR_STONE,
 			Pos:   pos,
 			Block: false,
 		}

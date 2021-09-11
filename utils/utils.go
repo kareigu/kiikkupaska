@@ -42,6 +42,7 @@ type RenderingAssets struct {
 	TileTextures     []rl.Texture2D
 	CharacterSprites []rl.Texture2D
 	UISprites        []rl.Texture2D
+	MissingTexture   *rl.Texture2D
 	MainFont         rl.Font
 	SecondaryFont    rl.Font
 }

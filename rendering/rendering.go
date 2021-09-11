@@ -10,7 +10,6 @@ import (
 var Assets utils.RenderingAssets
 
 const (
-	TILE_MISSING        = iota
 	TILE_FLOOR_STONE    = iota
 	TILE_WALL_STONE     = iota
 	TILE_WALL_MOSS      = iota
@@ -20,11 +19,16 @@ const (
 )
 
 func LoadAssets() *utils.RenderingAssets {
+	missingImg := rl.GenImageColor(32, 32, rl.Pink)
+	missingTexture := rl.LoadTextureFromImage(missingImg)
+	rl.UnloadImage(missingImg)
+
 	main, sec := loadFonts()
 	Assets = utils.RenderingAssets{
 		TileTextures:     loadTileTextures(),
 		CharacterSprites: loadCharacterSprites(),
 		UISprites:        loadUISprites(),
+		MissingTexture:   &missingTexture,
 		MainFont:         main,
 		SecondaryFont:    sec,
 	}
@@ -48,7 +52,6 @@ func Cleanup() {
 
 func loadTileTextures() []rl.Texture2D {
 	texturelist := make([]rl.Texture2D, 7)
-	texturelist[TILE_MISSING] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "missing_tile.png"))
 	texturelist[TILE_FLOOR_STONE] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile.png"))
 	texturelist[TILE_WALL_STONE] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile.png"))
 	texturelist[TILE_WALL_MOSS] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "wall_moss_tile.png"))
@@ -60,10 +63,10 @@ func loadTileTextures() []rl.Texture2D {
 }
 
 func GetTile(tileType int) *rl.Texture2D {
-	if tex := &Assets.TileTextures[tileType]; tex != nil {
+	if tex := &Assets.TileTextures[tileType]; tex.Height != 0 {
 		return tex
 	} else {
-		return &Assets.TileTextures[TILE_MISSING]
+		return Assets.MissingTexture
 	}
 }
 
@@ -81,10 +84,10 @@ func loadCharacterSprites() []rl.Texture2D {
 }
 
 func GetCharacterSprite(state int) *rl.Texture2D {
-	if tex := &Assets.CharacterSprites[state]; tex != nil {
+	if tex := &Assets.CharacterSprites[state]; tex.Height != 0 {
 		return tex
 	} else {
-		return &Assets.TileTextures[TILE_MISSING]
+		return Assets.MissingTexture
 	}
 }
 
@@ -104,10 +107,10 @@ func loadUISprites() []rl.Texture2D {
 }
 
 func GetUISprite(uiAsset int) *rl.Texture2D {
-	if tex := &Assets.UISprites[uiAsset]; tex != nil {
+	if tex := &Assets.UISprites[uiAsset]; tex.Height != 0 {
 		return tex
 	} else {
-		return &Assets.TileTextures[TILE_MISSING]
+		return Assets.MissingTexture
 	}
 }
 
