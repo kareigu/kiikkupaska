@@ -26,7 +26,7 @@ func handleTileDebugDisplay(tile *Tile) {
 		rl.DrawText(fmt.Sprintf("%d", tile.LightLevel), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
 	case DD_TILE_DISTANCE_FROM_PLAYER:
 		//! Tile distance debug display
-		dist := getTileDistanceToPlayer(state.Player, tile)
+		dist := tile.DistanceToPlayer()
 		rl.DrawText(fmt.Sprintf("%.1f", dist), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
 	}
 

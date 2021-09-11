@@ -106,7 +106,7 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 				if tile != nil {
 					//! Check if tile coordinates are in the player's visibility range
 					//! If not, don't bother adding it for render
-					if lightLevel, ok := checkTileVisibility(state.Player, tile); ok {
+					if lightLevel, ok := tile.VisibleToPlayer(); ok {
 						tile.LightLevel = lightLevel
 						tilesToDraw = append(tilesToDraw, tile)
 					}
@@ -162,14 +162,6 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 
 		rl.EndDrawing()
 	}
-}
-
-func getTileDistanceToPlayer(player *Player, tile *Tile) float32 {
-	tile_vec := tile.Pos.ToVec2()
-	player_vec := player.Pos.ToVec2()
-	distance := rl.Vector2Distance(tile_vec, player_vec) / float32(TILE_SIZE)
-
-	return distance
 }
 
 func reverseRange(v float32) float32 {

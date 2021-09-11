@@ -31,6 +31,24 @@ func (tile *Tile) Destroy() bool {
 	return false
 }
 
+func (tile *Tile) DistanceToPlayer() float32 {
+	tile_vec := tile.Pos.ToVec2()
+	player_vec := state.Player.Pos.ToVec2()
+	distance := rl.Vector2Distance(tile_vec, player_vec) / float32(TILE_SIZE)
+
+	return distance
+}
+
+func (tile *Tile) VisibleToPlayer() (uint8, bool) {
+	visrange := int32(state.Player.Stats.Visibility) * TILE_SIZE
+	if tile.Pos.X > state.Player.Pos.X+(visrange) || tile.Pos.X < state.Player.Pos.X-(visrange) || tile.Pos.Y > state.Player.Pos.Y+(visrange) || tile.Pos.Y < state.Player.Pos.Y-(visrange) {
+		return 0, false
+	} else {
+		distance := tile.DistanceToPlayer()
+		return calculateLightLevel(distance, state.Player.Stats.Visibility), true
+	}
+}
+
 func charToTile(c string, pos utils.IVector2) Tile {
 	switch c {
 	case "@":

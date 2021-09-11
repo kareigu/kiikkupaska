@@ -87,9 +87,7 @@ func (enemy *Enemy) StartTurn() {
 
 func (enemy *Enemy) Draw() {
 	texture := rendering.GetCharacterSprite(enemy.State)
-	colour := rl.White
-	colour.A = enemy.LightLevel
-	rl.DrawTexture(*texture, enemy.Pos.X, enemy.Pos.Y, colour)
+	rl.DrawTexture(*texture, enemy.Pos.X, enemy.Pos.Y, rl.White)
 }
 
 func (enemy *Enemy) VisibleToPlayer() bool {

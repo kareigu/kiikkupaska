@@ -116,16 +116,6 @@ func generateMapString() string {
 	return mapstring
 }
 
-func checkTileVisibility(player *Player, tile *Tile) (uint8, bool) {
-	visrange := int32(player.Stats.Visibility) * TILE_SIZE
-	if tile.Pos.X > player.Pos.X+(visrange) || tile.Pos.X < player.Pos.X-(visrange) || tile.Pos.Y > player.Pos.Y+(visrange) || tile.Pos.Y < player.Pos.Y-(visrange) {
-		return 0, false
-	} else {
-		distance := getTileDistanceToPlayer(player, tile)
-		return calculateLightLevel(distance, player.Stats.Visibility), true
-	}
-}
-
 func getTile(pos utils.IVector2) (*Tile, bool) {
 	x := pos.X / TILE_SIZE
 	y := pos.Y / TILE_SIZE
