@@ -108,6 +108,11 @@ func (enemy *Enemy) DistanceToPlayer() float32 {
 	return distance
 }
 
+func (enemy *Enemy) LightEmittedToTile(tile *Tile) uint8 {
+	distance := tile.DistanceToEnemy(enemy)
+	return calculateLightLevel(distance, enemy.Stats.Visibility)
+}
+
 func CreateRandomEnemy(pos utils.IVector2) *Enemy {
 	stats := DefaultGoblinStats()
 	new_enemy := Enemy{

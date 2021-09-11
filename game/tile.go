@@ -39,14 +39,24 @@ func (tile *Tile) DistanceToPlayer() float32 {
 	return distance
 }
 
-func (tile *Tile) VisibleToPlayer() (uint8, bool) {
-	visrange := int32(state.Player.Stats.Visibility) * TILE_SIZE
-	if tile.Pos.X > state.Player.Pos.X+(visrange) || tile.Pos.X < state.Player.Pos.X-(visrange) || tile.Pos.Y > state.Player.Pos.Y+(visrange) || tile.Pos.Y < state.Player.Pos.Y-(visrange) {
-		return 0, false
-	} else {
-		distance := tile.DistanceToPlayer()
-		return calculateLightLevel(distance, state.Player.Stats.Visibility), true
+func (tile *Tile) DistanceToEnemy(enemy *Enemy) float32 {
+	tile_vec := tile.Pos.ToVec2()
+	enemy_vec := enemy.Pos.ToVec2()
+	distance := rl.Vector2Distance(tile_vec, enemy_vec) / float32(TILE_SIZE)
+
+	return distance
+}
+
+func (tile *Tile) VisibleToPlayer(enemies *[]*Enemy) bool {
+	distance := tile.DistanceToPlayer()
+	tile.LightLevel = calculateLightLevel(distance, state.Player.Stats.Visibility)
+	for _, enemy := range *enemies {
+		if nlight := enemy.LightEmittedToTile(tile); nlight > tile.LightLevel {
+			tile.LightLevel = nlight
+		}
 	}
+
+	return tile.LightLevel > 0
 }
 
 func charToTile(c string, pos utils.IVector2) Tile {

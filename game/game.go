@@ -94,26 +94,6 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 	} else {
 		HandleControls()
 
-		//*
-		//*	Filter out the tiles that are visible to the player
-		//*	If the the tile is visible push it to a separate array
-		//*	that the renderer can use to save time not going through all this at render time
-		//*
-		var tilesToDraw []*Tile
-
-		for _, tile_row := range state.Map {
-			for _, tile := range tile_row {
-				if tile != nil {
-					//! Check if tile coordinates are in the player's visibility range
-					//! If not, don't bother adding it for render
-					if lightLevel, ok := tile.VisibleToPlayer(); ok {
-						tile.LightLevel = lightLevel
-						tilesToDraw = append(tilesToDraw, tile)
-					}
-				}
-			}
-		}
-
 		var enemiesToDraw []*Enemy
 		for i, enemy := range state.Enemies {
 			if enemy.Health <= 0.0 {
@@ -126,6 +106,25 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 			if enemy.VisibleToPlayer() {
 				enemy.LightLevel = calculateLightLevel(enemy.DistanceToPlayer(), state.Player.Stats.Visibility)
 				enemiesToDraw = append(enemiesToDraw, enemy)
+			}
+		}
+
+		//*
+		//*	Filter out the tiles that are visible to the player
+		//*	If the the tile is visible push it to a separate array
+		//*	that the renderer can use to save time not going through all this at render time
+		//*
+		var tilesToDraw []*Tile
+
+		for _, tile_row := range state.Map {
+			for _, tile := range tile_row {
+				if tile != nil {
+					//! Check if tile coordinates are in the player's visibility range
+					//! If not, don't bother adding it for render
+					if tile.VisibleToPlayer(&enemiesToDraw) {
+						tilesToDraw = append(tilesToDraw, tile)
+					}
+				}
 			}
 		}
 
