@@ -24,7 +24,7 @@ func init() {
 func init() {
 	widthFlag := flag.Int("w", 800, "Define the window width")
 	heightFlag := flag.Int("h", 600, "Define the window height")
-	musicFlag := flag.Bool("music", false, "Enable or disable music")
+	musicFlag := flag.Bool("music", true, "Enable or disable music")
 	debugFlag := flag.Bool("debug", false, "Enable debug mode")
 
 	flag.Parse()
@@ -41,8 +41,6 @@ func init() {
 	}
 }
 
-var music = make([]rl.Music, 4)
-
 func main() {
 	rl.InitWindow(state.RES.X, state.RES.Y, "go-raylib")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
@@ -54,20 +52,10 @@ func main() {
 
 	var gameState *game.GameState
 
-	midx := 0
+	var menuMusic rl.Music
 	if state.Music {
-		music[0] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_int01.wav"))
-		music[1] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_pre01.wav"))
-		music[3] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_cbt01.wav"))
-		music[2] = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "sng01_aft01.wav"))
-		music[0].Looping = false
-		music[1].Looping = false
-		music[2].Looping = false
-
-		rl.PlayMusicStream(music[0])
-		rl.PlayMusicStream(music[1])
-		rl.PlayMusicStream(music[2])
-		rl.PlayMusicStream(music[3])
+		menuMusic = rl.LoadMusicStream(utils.GetAssetPath(utils.MUSIC, "main_menu01.mp3"))
+		rl.PlayMusicStream(menuMusic)
 	}
 
 	exitWindow := false
@@ -75,15 +63,13 @@ func main() {
 		exitWindow = rl.WindowShouldClose()
 		rl.SetWindowTitle(fmt.Sprintf("kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
 
-		if state.Music {
-			rl.UpdateMusicStream(music[midx])
-			if !rl.IsMusicStreamPlaying(music[midx]) {
-				midx++
-			}
-		}
-
 		switch state.View {
 		case utils.MAIN_MENU:
+			if state.Music {
+				rl.SetMusicVolume(menuMusic, 0.4)
+				rl.UpdateMusicStream(menuMusic)
+			}
+
 			if rl.IsKeyPressed(rl.KeyEnter) {
 				state.View = utils.IN_GAME
 			}
