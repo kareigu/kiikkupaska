@@ -274,6 +274,19 @@ func DrawSettingsPanel() {
 		saveSettingsFile()
 	}
 
+	// TODO: Move all this UI stuff inside the rendering package
+
+	checkboxTex := 4
+	if appState.Settings.Music {
+		checkboxTex = 3
+	}
+
+	rl.DrawTextureV(
+		appState.RenderAssets.UISprites[checkboxTex],
+		rl.NewVector2(musicCheckboxBackground.X, musicCheckboxBackground.Y),
+		rl.White,
+	)
+
 	closeButtonBackground := rl.NewRectangle(
 		appState.Settings.Resolution.ToVec2().X/2.0-40.0,
 		appState.Settings.Resolution.ToVec2().Y/2.0+220.0,
@@ -289,6 +302,12 @@ func DrawButton(pos rl.Vector2, text string) bool {
 	const width = 100.0
 	pos.X -= width / 2.0
 	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: width, Height: 25.0}, text)
+}
+
+func DrawDefaultText(pos rl.Vector2, size float32, text string, colour rl.Color) {
+	width := rl.MeasureText(text, int32(size))
+	pos.X -= float32(width) / 2.0
+	rl.DrawText(text, int32(pos.X), int32(pos.Y), int32(size), colour)
 }
 
 func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {

@@ -95,13 +95,17 @@ const (
 	SPRITE_ACTION_MARK    = iota
 	SPRITE_MOVEMENT_MARK  = iota
 	SPRITE_SELECTION_MARK = iota
+	SPRITE_CHECKMARK      = iota
+	SPRITE_CROSS          = iota
 )
 
 func loadUISprites() []rl.Texture2D {
-	texturelist := make([]rl.Texture2D, 3)
+	texturelist := make([]rl.Texture2D, 5)
 	texturelist[SPRITE_ACTION_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "action_mark.png"))
 	texturelist[SPRITE_MOVEMENT_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "movement_mark.png"))
 	texturelist[SPRITE_SELECTION_MARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "selection_mark.png"))
+	texturelist[SPRITE_CHECKMARK] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "checkmark.png"))
+	texturelist[SPRITE_CROSS] = rl.LoadTexture(utils.GetAssetPath(utils.SPRITE, "cross.png"))
 
 	return texturelist
 }
