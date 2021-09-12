@@ -275,7 +275,9 @@ func DrawSettingsPanel() {
 }
 
 func DrawButton(pos rl.Vector2, text string) bool {
-	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: 100.0, Height: 25.0}, text)
+	const width = 100.0
+	pos.X -= width / 2.0
+	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: width, Height: 25.0}, text)
 }
 
 func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {

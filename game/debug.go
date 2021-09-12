@@ -32,23 +32,23 @@ func handleTileDebugDisplay(tile *Tile) {
 }
 
 func drawDebugSettings() {
-	if utils.DrawButton(rl.NewVector2(50.0, 100.0), "No display") {
+	if utils.DrawButton(rl.NewVector2(100.0, 100.0), "No display") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 130.0), "Tile light level") {
+	if utils.DrawButton(rl.NewVector2(100.0, 130.0), "Tile light level") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 160.0), "Tile distance from player") {
+	if utils.DrawButton(rl.NewVector2(100.0, 160.0), "Tile distance from player") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 190.0), "Teleport to cursor") {
+	if utils.DrawButton(rl.NewVector2(100.0, 190.0), "Teleport to cursor") {
 		state.Player.Pos = state.SelectionMode.Pos
 	}
 
-	if utils.DrawButton(rl.NewVector2(50.0, 220.0), "Spawn enemy on cursor") {
+	if utils.DrawButton(rl.NewVector2(100.0, 220.0), "Spawn enemy on cursor") {
 		nEnemy := CreateRandomEnemy(state.SelectionMode.Pos)
 		state.Enemies = append(state.Enemies, nEnemy)
 	}
