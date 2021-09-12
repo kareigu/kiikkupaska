@@ -153,76 +153,43 @@ func (enemy *Enemy) Move() {
 	e_x := enemy.Pos.X
 	e_y := enemy.Pos.Y
 
-	/* 	if enemy.CanSeePlayer() {
-	   		enemy.LastKnownPlayerPos = state.Player.Pos
-	   	}
-
-	   	if enemy.Pos == enemy.LastKnownPlayerPos {
-	   		switch rl.GetRandomValue(0, 3) {
-	   		case 0:
-	   			e_x -= TILE_SIZE
-	   		case 1:
-	   			e_x += TILE_SIZE
-	   		case 2:
-	   			e_y -= TILE_SIZE
-	   		case 3:
-	   			e_y += TILE_SIZE
-	   		}
-
-	   	} else {
-	   		enemy_pos := enemy.Pos
-	   		diff := rl.Vector2Subtract(enemy_pos.ToVec2(), enemy.LastKnownPlayerPos.ToVec2())
-
-	   		if diff.X != 0.0 {
-	   			if math.Signbit(float64(diff.X)) {
-	   				e_x -= TILE_SIZE
-	   			} else {
-	   				e_x += TILE_SIZE
-	   			}
-	   		} else if diff.Y != 0.0 {
-	   			if math.Signbit(float64(diff.Y)) {
-	   				e_y -= TILE_SIZE
-	   			} else {
-	   				e_y += TILE_SIZE
-	   			}
-	   		}
-
-	   		log.Printf("Trying to move to x: %d y: %d", e_x/TILE_SIZE, e_y/TILE_SIZE)
-
-	   	} */
-
 	if enemy.CanSeePlayer() {
-		enemy_pos := enemy.Pos
-		diff := rl.Vector2Subtract(enemy_pos.ToVec2(), enemy.LastKnownPlayerPos.ToVec2())
+		if enemy.DistanceToPlayer() <= 1.4 {
+			enemy.Turn.Movement = 0
+			return
+		}
+		enemy.LastKnownPlayerPos = state.Player.Pos
+	}
+
+	if enemy.Pos == enemy.LastKnownPlayerPos {
+		switch rl.GetRandomValue(0, 3) {
+		case 0:
+			e_x -= TILE_SIZE
+		case 1:
+			e_x += TILE_SIZE
+		case 2:
+			e_y -= TILE_SIZE
+		case 3:
+			e_y += TILE_SIZE
+		}
+	} else {
+		diff := rl.Vector2Subtract(enemy.Pos.ToVec2(), enemy.LastKnownPlayerPos.ToVec2())
 
 		if diff.X != 0.0 {
 			if math.Signbit(float64(diff.X)) {
-				e_x -= TILE_SIZE
-			} else {
 				e_x += TILE_SIZE
+			} else {
+				e_x -= TILE_SIZE
 			}
 		} else if diff.Y != 0.0 {
 			if math.Signbit(float64(diff.Y)) {
-				e_y -= TILE_SIZE
-			} else {
 				e_y += TILE_SIZE
+			} else {
+				e_y -= TILE_SIZE
 			}
 		}
 
 		log.Printf("Trying to move to x: %d y: %d", e_x/TILE_SIZE, e_y/TILE_SIZE)
-	} else {
-		if enemy.Pos == enemy.LastKnownPlayerPos {
-			switch rl.GetRandomValue(0, 3) {
-			case 0:
-				e_x -= TILE_SIZE
-			case 1:
-				e_x += TILE_SIZE
-			case 2:
-				e_y -= TILE_SIZE
-			case 3:
-				e_y += TILE_SIZE
-			}
-		}
 	}
 
 	npos := utils.IVector2{X: e_x, Y: e_y}
@@ -235,15 +202,12 @@ func (enemy *Enemy) Move() {
 		return
 	}
 
-	if state.Player.Pos == npos {
-		return
+	if enemy.Pos == enemy.LastKnownPlayerPos {
+		enemy.LastKnownPlayerPos = npos
 	}
 
-	/* if enemy.LastKnownPlayerPos == enemy.Pos {
-		enemy.LastKnownPlayerPos = npos
-	} */
-
 	enemy.Pos = npos
+
 	enemy.Turn.Movement--
 }
 
@@ -292,7 +256,7 @@ func DefaultEnemyTurn() TurnData {
 func DefaultGoblinStats() Stats {
 	return Stats{
 		Movement:   4,
-		Visibility: 4,
+		Visibility: 6,
 		Vitality:   5,
 		Strength:   3,
 		Dexterity:  5,
