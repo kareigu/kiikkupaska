@@ -242,14 +242,17 @@ func DrawSettingsPanel() {
 	}
 
 	DrawSecondaryText(
-		rl.NewVector2(appState.Settings.Resolution.ToVec2().X/2.0, appState.Settings.Resolution.ToVec2().Y/2.0+120.0),
-		24.0,
+		rl.NewVector2(
+			appState.Settings.Resolution.ToVec2().X/2.0-25.0,
+			appState.Settings.Resolution.ToVec2().Y/2.0+120.0,
+		),
+		25.0,
 		"Music",
 		rl.RayWhite,
 	)
 
 	musicCheckboxBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-25.0,
+		appState.Settings.Resolution.ToVec2().X/2.0+25.0,
 		appState.Settings.Resolution.ToVec2().Y/2.0+120.0,
 		25.0,
 		25.0,
@@ -276,9 +279,13 @@ func DrawButton(pos rl.Vector2, text string) bool {
 }
 
 func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {
+	width := rl.MeasureText(text, int32(size))
+	pos.X -= float32(width) / 2.0
 	rl.DrawTextEx(appState.RenderAssets.MainFont, text, pos, size, 1.0, colour)
 }
 
 func DrawSecondaryText(pos rl.Vector2, size float32, text string, colour rl.Color) {
+	width := rl.MeasureText(text, int32(size))
+	pos.X -= float32(width) / 2.0
 	rl.DrawTextEx(appState.RenderAssets.SecondaryFont, text, pos, size, 1.0, colour)
 }

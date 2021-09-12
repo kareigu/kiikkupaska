@@ -82,7 +82,7 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X/2 - 170), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
+			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
 			start := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
 			settings := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
 			exit := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
@@ -119,7 +119,7 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X) / 2.25, Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
+			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
 
 			resume := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
 			exit := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
