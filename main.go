@@ -66,6 +66,10 @@ func main() {
 	for !exitWindow {
 		exitWindow = rl.WindowShouldClose()
 		rl.SetWindowTitle(fmt.Sprintf("Kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
+		if state.Settings.Music {
+			rl.SetMusicVolume(menuMusic, 0.4)
+			rl.UpdateMusicStream(menuMusic)
+		}
 
 		switch state.View {
 		//*
@@ -73,10 +77,6 @@ func main() {
 		//*
 		//*
 		case utils.MAIN_MENU:
-			if state.Settings.Music {
-				rl.SetMusicVolume(menuMusic, 0.4)
-				rl.UpdateMusicStream(menuMusic)
-			}
 
 			if rl.IsKeyPressed(rl.KeyEnter) {
 				state.View = utils.IN_GAME
