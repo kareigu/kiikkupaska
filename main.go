@@ -49,6 +49,9 @@ func main() {
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
 	rl.SetExitKey(rl.KeyF4)
 
+	icon := rl.LoadImage("assets/fav.png")
+	rl.SetWindowIcon(*icon)
+
 	utils.InitUtils(&state, debugMode)
 	state.RenderAssets = rendering.LoadAssets()
 	rl.InitAudioDevice()
