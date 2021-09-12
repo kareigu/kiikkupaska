@@ -126,7 +126,7 @@ func enemiesDebugInfo() {
 		}
 		data := fmt.Sprintf("Enemies in level: %v\nClosest Enemy: %.1f\nPos: %v\nLast player pos: %v", enemyCount, closestEnemy.DistanceToPlayer(), pos, p_pos)
 
-		background := rl.NewRectangle(50.0, state.AppState.RES.ToVec2().Y-350.0, 250.0, 180.0)
+		background := rl.NewRectangle(50.0, state.AppState.Settings.Resolution.ToVec2().Y-350.0, 250.0, 180.0)
 		rl.DrawRectangleRec(background, rl.DarkGray)
 
 		rl.DrawTextRec(

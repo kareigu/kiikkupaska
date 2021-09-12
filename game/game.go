@@ -55,8 +55,8 @@ func InitGame(appState *utils.State) *GameState {
 func initPlayerAndCam(state *utils.State) (*Player, *rl.Camera2D) {
 	cam := rl.Camera2D{
 		Offset: rl.Vector2{
-			X: float32(state.RES.X / 2),
-			Y: float32(state.RES.Y / 2),
+			X: float32(state.Settings.Resolution.X / 2),
+			Y: float32(state.Settings.Resolution.Y / 2),
 		},
 		Target: rl.Vector2{
 			X: 0.0,

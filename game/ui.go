@@ -16,20 +16,22 @@ func drawSelectionCursor() {
 }
 
 func drawUI() {
+	RES := state.AppState.Settings.Resolution
 	if !state.Player.Turn.Done {
+
 		for h := 0; h < int(state.Player.Turn.Actions); h++ {
-			rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_ACTION_MARK), state.AppState.RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
+			rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_ACTION_MARK), RES.X-100, int32(10+h*int(TILE_SIZE)+5), rl.White)
 		}
 
 		for m := 0; m < int(state.Player.Turn.Movement); m++ {
-			rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_MOVEMENT_MARK), state.AppState.RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
+			rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_MOVEMENT_MARK), RES.X-60, int32(10+m*int(TILE_SIZE)+5), rl.White)
 		}
 
 		if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {
-			utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
+			utils.DrawMainText(rl.NewVector2(float32(RES.X)/2.7, float32(RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
 		}
 	} else {
-		utils.DrawMainText(rl.NewVector2(float32(state.AppState.RES.X)/2.7, float32(state.AppState.RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
+		utils.DrawMainText(rl.NewVector2(float32(RES.X)/2.7, float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
 	}
 
 	if state.DebugDisplay.Enabled {
