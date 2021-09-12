@@ -94,6 +94,14 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 	} else {
 		HandleControls()
 
+		if state.Player.Turn.Done {
+			for _, enemy := range state.Enemies {
+				if !enemy.Turn.Done {
+					enemy.DoAction()
+				}
+			}
+		}
+
 		var enemiesToDraw []*Enemy
 		for i, enemy := range state.Enemies {
 			if enemy.Health <= 0.0 {

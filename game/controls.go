@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,12 +12,18 @@ func HandleControls() {
 		if state.SelectionMode.Using {
 			moveSelectionCursor(&state.SelectionMode)
 		} else {
-			movePlayer(state.Player, &state.Map)
+			state.Player.Move()
 		}
 		state.tempTimeSinceTurn = 0.0
 	} else {
 		state.SelectionMode.Using = false
-		if state.tempTimeSinceTurn > 2.0 {
+
+		enemyTurnsComplete := false
+		for _, enemy := range state.Enemies {
+			enemyTurnsComplete = enemy.Turn.Done == true
+		}
+		if enemyTurnsComplete {
+			fmt.Printf("Enemy turns processed in %.3f ms\n", state.tempTimeSinceTurn)
 			state.Player.StartTurn()
 		} else {
 			state.tempTimeSinceTurn += rl.GetFrameTime()
@@ -71,48 +78,11 @@ func HandleControls() {
 	}
 
 	if rl.IsKeyPressed(rl.KeyEnter) {
-		state.Player.Turn.Done = true
+		state.Player.EndTurn()
 	}
 
 	state.Camera.Target.X = float32(state.Player.Pos.X)
 	state.Camera.Target.Y = float32(state.Player.Pos.Y)
-}
-
-func movePlayer(player *Player, tiles *[][]*Tile) {
-
-	if player.Turn.Movement > 0 {
-		p_x := player.Pos.X
-		p_y := player.Pos.Y
-
-		if rl.IsKeyPressed(rl.KeyLeft) || rl.IsKeyPressed(rl.KeyA) {
-			p_x -= TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyRight) || rl.IsKeyPressed(rl.KeyD) {
-			p_x += TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyUp) || rl.IsKeyPressed(rl.KeyW) {
-			p_y -= TILE_SIZE
-		}
-		if rl.IsKeyPressed(rl.KeyDown) || rl.IsKeyPressed(rl.KeyS) {
-			p_y += TILE_SIZE
-		}
-
-		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
-
-		if tile, ok := getTile(npos); ok {
-			if tile.Block {
-				return
-			}
-		} else {
-			return
-		}
-
-		if p_x != player.Pos.X || p_y != player.Pos.Y {
-			player.Pos.X = p_x
-			player.Pos.Y = p_y
-			player.Turn.Movement--
-		}
-	}
 }
 
 func moveSelectionCursor(selection *SelectionMode) {

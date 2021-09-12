@@ -50,9 +50,53 @@ func (player *Player) StartTurn() {
 	player.Turn.Done = false
 }
 
+func (player *Player) EndTurn() {
+	for _, enemy := range state.Enemies {
+		enemy.StartTurn()
+	}
+	player.Turn.Done = true
+}
+
 func (player *Player) Draw() {
 	texture := rendering.GetCharacterSprite(player.State)
 	rl.DrawTexture(*texture, player.Pos.X, player.Pos.Y, rl.White)
+}
+
+func (player *Player) Move() {
+
+	if player.Turn.Movement > 0 {
+		p_x := player.Pos.X
+		p_y := player.Pos.Y
+
+		if rl.IsKeyPressed(rl.KeyLeft) || rl.IsKeyPressed(rl.KeyA) {
+			p_x -= TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyRight) || rl.IsKeyPressed(rl.KeyD) {
+			p_x += TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyUp) || rl.IsKeyPressed(rl.KeyW) {
+			p_y -= TILE_SIZE
+		}
+		if rl.IsKeyPressed(rl.KeyDown) || rl.IsKeyPressed(rl.KeyS) {
+			p_y += TILE_SIZE
+		}
+
+		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
+
+		if tile, ok := getTile(npos); ok {
+			if tile.Block {
+				return
+			}
+		} else {
+			return
+		}
+
+		if p_x != player.Pos.X || p_y != player.Pos.Y {
+			player.Pos.X = p_x
+			player.Pos.Y = p_y
+			player.Turn.Movement--
+		}
+	}
 }
 
 func (player *Player) Attack(enemy *Enemy) {
@@ -80,7 +124,7 @@ func (enemy *Enemy) GetStats() *Stats {
 }
 
 func (enemy *Enemy) StartTurn() {
-	enemy.Turn.Actions = 3
+	enemy.Turn.Actions = 1
 	enemy.Turn.Movement = enemy.Stats.Movement
 	enemy.Turn.Done = false
 }
@@ -88,6 +132,49 @@ func (enemy *Enemy) StartTurn() {
 func (enemy *Enemy) Draw() {
 	texture := rendering.GetCharacterSprite(enemy.State)
 	rl.DrawTexture(*texture, enemy.Pos.X, enemy.Pos.Y, rl.White)
+}
+
+func (enemy *Enemy) DoAction() {
+	enemy.Move()
+	if !(enemy.Turn.Movement > 0) {
+		enemy.Turn.Done = true
+	}
+}
+
+func (enemy *Enemy) Move() {
+	if enemy.Turn.Movement > 0 {
+		e_x := enemy.Pos.X
+		e_y := enemy.Pos.Y
+
+		switch rl.GetRandomValue(0, 3) {
+		case 0:
+			e_x -= TILE_SIZE
+		case 1:
+			e_x += TILE_SIZE
+		case 2:
+			e_y -= TILE_SIZE
+		case 3:
+			e_y += TILE_SIZE
+		}
+
+		npos := utils.IVector2{X: e_x, Y: e_y}
+
+		if tile, ok := getTile(npos); ok {
+			if tile.Block {
+				return
+			}
+		} else {
+			return
+		}
+
+		if state.Player.Pos == npos {
+			return
+		}
+
+		enemy.Pos.X = e_x
+		enemy.Pos.Y = e_y
+		enemy.Turn.Movement--
+	}
 }
 
 func (enemy *Enemy) VisibleToPlayer() bool {
