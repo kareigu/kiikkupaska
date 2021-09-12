@@ -116,9 +116,13 @@ func generateMapString() string {
 	return mapstring
 }
 
-func getTile(pos utils.IVector2) (*Tile, bool) {
+func GetMapTile(pos utils.IVector2) (*Tile, bool) {
 	x := pos.X / TILE_SIZE
 	y := pos.Y / TILE_SIZE
+
+	if x < 0 || y < 0 {
+		return nil, false
+	}
 
 	if tile := state.Map[x][y]; tile != nil {
 		return tile, true

@@ -47,7 +47,7 @@ func HandleControls() {
 	if state.SelectionMode.Using {
 		if state.Player.Turn.Actions > 0 {
 			if rl.IsKeyPressed(rl.KeyB) {
-				if tile, ok := getTile(state.SelectionMode.Pos); ok {
+				if tile, ok := GetMapTile(state.SelectionMode.Pos); ok {
 					if tile.Destroy() {
 						state.Player.Turn.Actions--
 					}

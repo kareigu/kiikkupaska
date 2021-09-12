@@ -10,6 +10,7 @@ import (
 type DebugDisplayData struct {
 	Enabled         bool
 	TileDisplayMode int
+	TileLightFx     bool
 }
 
 const (
@@ -52,6 +53,10 @@ func drawDebugSettings() {
 		nEnemy := CreateRandomEnemy(state.SelectionMode.Pos)
 		state.Enemies = append(state.Enemies, nEnemy)
 	}
+
+	if utils.DrawButton(rl.NewVector2(100.0, 250.0), "Toggle light fx") {
+		state.DebugDisplay.TileLightFx = !state.DebugDisplay.TileLightFx
+	}
 }
 
 func drawDebugInfo() {
@@ -71,7 +76,7 @@ func tileDebugInfo() {
 		sourcePos = state.Player.Pos
 	}
 
-	if t, ok := getTile(sourcePos); ok {
+	if t, ok := GetMapTile(sourcePos); ok {
 		tile = t
 	}
 
@@ -82,7 +87,7 @@ func tileDebugInfo() {
 		Y: tile.Pos.Y / TILE_SIZE,
 	}
 
-	data := fmt.Sprintf("Tile Pos: %v\nBlock: %v\nTile Type: %v", pos, tile.Block, tile.Type)
+	data := fmt.Sprintf("Tile Pos: %v\nBlock: %v\nTile Type: %v\nNeighbours: %v", pos, tile.Block, tile.Type, tile.Neighbours)
 
 	rl.DrawRectangleRec(background, rl.DarkGray)
 

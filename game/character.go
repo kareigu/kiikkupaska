@@ -89,7 +89,7 @@ func (player *Player) Move() {
 
 		npos := utils.IVector2{X: p_x - PLAYER_OFFSET_X, Y: p_y - PLAYER_OFFSET_Y}
 
-		if tile, ok := getTile(npos); ok {
+		if tile, ok := GetMapTile(npos); ok {
 			if tile.Block {
 				return
 			}
@@ -194,7 +194,7 @@ func (enemy *Enemy) Move() {
 
 	npos := utils.IVector2{X: e_x, Y: e_y}
 
-	if tile, ok := getTile(npos); ok {
+	if tile, ok := GetMapTile(npos); ok {
 		if tile.Block {
 			return
 		}

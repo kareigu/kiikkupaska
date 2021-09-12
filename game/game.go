@@ -41,6 +41,7 @@ func InitGame(appState *utils.State) *GameState {
 		DebugDisplay: DebugDisplayData{
 			Enabled:         false,
 			TileDisplayMode: DD_TILE_NO_DISPLAY,
+			TileLightFx:     true,
 		},
 		SelectionMode: SelectionMode{
 			Using: false,

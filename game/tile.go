@@ -12,14 +12,43 @@ type Tile struct {
 	Type       int
 	Pos        utils.IVector2
 	Block      bool
+	Neighbours uint8
 	LightLevel uint8
 }
 
 func (tile *Tile) Draw() {
 	texture := rendering.GetTile(tile.Type)
 	colour := rl.White
-	colour.A = tile.LightLevel
-	rl.DrawTexture(*texture, tile.Pos.X, tile.Pos.Y, colour)
+
+	if state.DebugDisplay.TileLightFx {
+		colour.A = tile.LightLevel
+	}
+
+	if tile.Type == rendering.TILE_WALL_STONE {
+		textures := &state.AppState.RenderAssets.TestTextures
+		tile.UpdateNeighbours()
+
+		rl.DrawTexture((*textures)[tile.Neighbours], tile.Pos.X, tile.Pos.Y, colour)
+	} else {
+		rl.DrawTexture(*texture, tile.Pos.X, tile.Pos.Y, colour)
+	}
+}
+
+func (tile *Tile) UpdateNeighbours() {
+	count := uint8(0)
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
+		count += 1
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
+		count += 2
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+		count += 4
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
+		count += 8
+	}
+	tile.Neighbours = count
 }
 
 func (tile *Tile) Destroy() bool {

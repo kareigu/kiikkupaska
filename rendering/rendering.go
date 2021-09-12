@@ -31,6 +31,7 @@ func LoadAssets() *utils.RenderingAssets {
 		MissingTexture:   &missingTexture,
 		MainFont:         main,
 		SecondaryFont:    sec,
+		TestTextures:     loadTestTiles(),
 	}
 	loadGUIStylesheet()
 	return &Assets
@@ -46,6 +47,9 @@ func Cleanup() {
 	for _, t := range Assets.UISprites {
 		rl.UnloadTexture(t)
 	}
+	for _, t := range Assets.TestTextures {
+		rl.UnloadTexture(t)
+	}
 	rl.UnloadFont(Assets.MainFont)
 	rl.UnloadFont(Assets.SecondaryFont)
 }
@@ -58,6 +62,93 @@ func loadTileTextures() []rl.Texture2D {
 	texturelist[TILE_FLOOR_SPAWN] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_spawn_tile.png"))
 	texturelist[TILE_FLOOR_OBS] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_obs_tile.png"))
 	texturelist[TILE_FLOOR_STONE_BL] = rl.LoadTexture(utils.GetAssetPath(utils.TEXTURE, "floor_stone_tile_bl.png"))
+
+	return texturelist
+}
+
+func loadTestTiles() []rl.Texture2D {
+	base := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile.png"))
+	rect := rl.NewRectangle(0.0, 0.0, 32.0, 32.0)
+
+	up := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile_vert.png"))
+	down := rl.ImageCopy(up)
+	rl.ImageFlipVertical(down)
+
+	right := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile_hor.png"))
+	left := rl.ImageCopy(right)
+	rl.ImageFlipHorizontal(left)
+
+	up_right := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, "wall_stone_tile_cor.png"))
+	down_right := rl.ImageCopy(up_right)
+	rl.ImageFlipVertical(down_right)
+	up_left := rl.ImageCopy(up_right)
+	rl.ImageFlipHorizontal(up_left)
+	down_left := rl.ImageCopy(down_right)
+	rl.ImageFlipHorizontal(down_left)
+
+	up_tile := rl.ImageCopy(base)
+	rl.ImageDraw(up_tile, up, rect, rect, rl.White)
+	right_tile := rl.ImageCopy(base)
+	rl.ImageDraw(right_tile, right, rect, rect, rl.White)
+	down_tile := rl.ImageCopy(base)
+	rl.ImageDraw(down_tile, down, rect, rect, rl.White)
+	left_tile := rl.ImageCopy(base)
+	rl.ImageDraw(left_tile, left, rect, rect, rl.White)
+	up_right_tile := rl.ImageCopy(up_tile)
+	rl.ImageDraw(up_right_tile, right, rect, rect, rl.White)
+	rl.ImageDraw(up_right_tile, up_right, rect, rect, rl.White)
+	up_left_tile := rl.ImageCopy(up_tile)
+	rl.ImageDraw(up_left_tile, left, rect, rect, rl.White)
+	rl.ImageDraw(up_left_tile, up_left, rect, rect, rl.White)
+	up_down_tile := rl.ImageCopy(up_tile)
+	rl.ImageDraw(up_down_tile, down, rect, rect, rl.White)
+	down_right_tile := rl.ImageCopy(down_tile)
+	rl.ImageDraw(down_right_tile, right, rect, rect, rl.White)
+	rl.ImageDraw(down_right_tile, down_right, rect, rect, rl.White)
+	down_left_tile := rl.ImageCopy(down_tile)
+	rl.ImageDraw(down_left_tile, left, rect, rect, rl.White)
+	rl.ImageDraw(down_left_tile, down_left, rect, rect, rl.White)
+	right_left_tile := rl.ImageCopy(right_tile)
+	rl.ImageDraw(right_left_tile, left, rect, rect, rl.White)
+	up_right_down_tile := rl.ImageCopy(up_right_tile)
+	rl.ImageDraw(up_right_down_tile, down, rect, rect, rl.White)
+	rl.ImageDraw(up_right_down_tile, down_right, rect, rect, rl.White)
+	up_right_left_tile := rl.ImageCopy(up_right_tile)
+	rl.ImageDraw(up_right_left_tile, left, rect, rect, rl.White)
+	rl.ImageDraw(up_right_left_tile, up_left, rect, rect, rl.White)
+	up_down_left_tile := rl.ImageCopy(up_left_tile)
+	rl.ImageDraw(up_down_left_tile, down, rect, rect, rl.White)
+	rl.ImageDraw(up_down_left_tile, down_left, rect, rect, rl.White)
+	right_down_left_tile := rl.ImageCopy(down_left_tile)
+	rl.ImageDraw(right_down_left_tile, right, rect, rect, rl.White)
+	rl.ImageDraw(right_down_left_tile, down_right, rect, rect, rl.White)
+	all_tile := rl.ImageCopy(up_right_left_tile)
+	rl.ImageDraw(all_tile, down, rect, rect, rl.White)
+	rl.ImageDraw(all_tile, down_right, rect, rect, rl.White)
+	rl.ImageDraw(all_tile, down_left, rect, rect, rl.White)
+
+	texturelist := make([]rl.Texture2D, 16)
+	texturelist[0] = rl.LoadTextureFromImage(base)
+	texturelist[1] = rl.LoadTextureFromImage(up_tile)
+	texturelist[2] = rl.LoadTextureFromImage(right_tile)
+	texturelist[3] = rl.LoadTextureFromImage(up_right_tile)
+	texturelist[4] = rl.LoadTextureFromImage(down_tile)
+	texturelist[5] = rl.LoadTextureFromImage(up_down_tile)
+	texturelist[6] = rl.LoadTextureFromImage(down_right_tile)
+	texturelist[7] = rl.LoadTextureFromImage(up_right_down_tile)
+	texturelist[8] = rl.LoadTextureFromImage(left_tile)
+	texturelist[9] = rl.LoadTextureFromImage(up_left_tile)
+	texturelist[10] = rl.LoadTextureFromImage(right_left_tile)
+	texturelist[11] = rl.LoadTextureFromImage(up_right_left_tile)
+	texturelist[12] = rl.LoadTextureFromImage(down_left_tile)
+	texturelist[13] = rl.LoadTextureFromImage(up_down_left_tile)
+	texturelist[14] = rl.LoadTextureFromImage(right_down_left_tile)
+	texturelist[15] = rl.LoadTextureFromImage(all_tile)
+
+	rl.UnloadImage(up)
+	rl.UnloadImage(right)
+	rl.UnloadImage(down)
+	rl.UnloadImage(left)
 
 	return texturelist
 }

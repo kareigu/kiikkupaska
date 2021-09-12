@@ -29,7 +29,7 @@ const (
 )
 
 const assetsFolder = "assets/"
-const textureFolder = assetsFolder + "textures/"
+const tilesFolder = assetsFolder + "tiles/"
 const spriteFolder = assetsFolder + "sprites/"
 const soundFolder = assetsFolder + "sound/"
 const stylesFolder = assetsFolder + "stylesheets/"
@@ -50,6 +50,7 @@ type RenderingAssets struct {
 	MissingTexture   *rl.Texture2D
 	MainFont         rl.Font
 	SecondaryFont    rl.Font
+	TestTextures     []rl.Texture2D
 }
 
 type IVector2 struct {
@@ -90,7 +91,7 @@ func DebugPrint(v interface{}) {
 func GetAssetPath(asset_type int, path string) string {
 	switch asset_type {
 	case TEXTURE:
-		return textureFolder + path
+		return tilesFolder + path
 	case SPRITE:
 		return spriteFolder + path
 	case SOUND:
