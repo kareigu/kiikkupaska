@@ -160,10 +160,20 @@ func handleResolutionChange(newRes IVector2) bool {
 	if newRes != appState.Settings.Resolution {
 		appState.Settings.Resolution = newRes
 		rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
+		centerWindow()
 		saveSettingsFile()
 		return true
 	}
 	return false
+}
+
+func centerWindow() {
+	currMonitor := rl.GetCurrentMonitor()
+	monitorRes := NewIVector2(int32(rl.GetMonitorWidth(currMonitor)), int32(rl.GetMonitorHeight(currMonitor)))
+	windowRes := appState.Settings.Resolution
+	diff := rl.Vector2Subtract(monitorRes.ToVec2(), windowRes.ToVec2())
+	diff = rl.Vector2DivideV(diff, rl.NewVector2(2.0, 2.0))
+	rl.SetWindowPosition(int(diff.X), int(diff.Y))
 }
 
 func saveSettingsFile() {
@@ -197,6 +207,7 @@ func loadSettingsFile(overrideRes bool) {
 				newRes := NewIVector2(int32(settings.ResolutionWidth), int32(settings.ResolutionHeight))
 				appState.Settings.Resolution = newRes
 				rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
+				centerWindow()
 			}
 		}
 	} else {
