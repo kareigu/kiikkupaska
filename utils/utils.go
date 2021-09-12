@@ -1,7 +1,11 @@
 package utils
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -39,13 +43,6 @@ type State struct {
 	RenderAssets *RenderingAssets
 }
 
-type Settings struct {
-	PanelVisible       bool
-	Music              bool
-	Resolution         IVector2
-	SelectedResolution int
-}
-
 type RenderingAssets struct {
 	TileTextures     []rl.Texture2D
 	CharacterSprites []rl.Texture2D
@@ -75,8 +72,13 @@ var appState *State
 var DebugMode bool
 
 func InitUtils(state *State, debug bool) {
+	defaultRes := IVector2{
+		X: 800,
+		Y: 600,
+	}
 	appState = state
 	DebugMode = debug
+	loadSettingsFile(state.Settings.Resolution != defaultRes)
 }
 
 func DebugPrint(v interface{}) {
@@ -104,7 +106,21 @@ func GetAssetPath(asset_type int, path string) string {
 	}
 }
 
+type Settings struct {
+	PanelVisible       bool
+	Music              bool
+	Resolution         IVector2
+	SelectedResolution int
+}
+
+type SettingsFile struct {
+	Music            bool `json:"music"`
+	ResolutionWidth  int  `json:"resolutionWidth"`
+	ResolutionHeight int  `json:"resolutionHeight"`
+}
+
 var resolutionList = []string{
+	"Custom",
 	"800x600",
 	"1024x768",
 	"1280x720",
@@ -116,32 +132,88 @@ var resolutionList = []string{
 }
 
 func stringToRes(s string) IVector2 {
-	split := strings.Split(s, "x")
+	if s == "Custom" {
+		return appState.Settings.Resolution
+	} else {
+		split := strings.Split(s, "x")
 
-	x_string := strings.Replace(split[0], "x", "", -1)
-	var x int32 = 800
-	if r, err := strconv.Atoi(x_string); err == nil {
-		x = int32(r)
+		x_string := strings.Replace(split[0], "x", "", -1)
+		var x int32 = 800
+		if r, err := strconv.Atoi(x_string); err == nil {
+			x = int32(r)
+		}
+
+		var y int32 = 600
+		if r, err := strconv.Atoi(split[1]); err == nil {
+			y = int32(r)
+		}
+
+		return NewIVector2(x, y)
 	}
+}
 
-	var y int32 = 600
-	if r, err := strconv.Atoi(split[1]); err == nil {
-		y = int32(r)
-	}
-
-	return NewIVector2(x, y)
+func resToString(res IVector2) string {
+	return fmt.Sprintf("%dx%d", res.X, res.Y)
 }
 
 func handleResolutionChange(newRes IVector2) bool {
 	if newRes != appState.Settings.Resolution {
 		appState.Settings.Resolution = newRes
 		rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
+		saveSettingsFile()
 		return true
 	}
 	return false
 }
 
+func saveSettingsFile() {
+	settings := SettingsFile{
+		Music:            appState.Settings.Music,
+		ResolutionWidth:  int(appState.Settings.Resolution.X),
+		ResolutionHeight: int(appState.Settings.Resolution.Y),
+	}
+
+	file, _ := json.MarshalIndent(settings, "", "	")
+
+	if f, err := os.OpenFile("settings.json", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755); err != nil {
+		log.Println("Couldn't write settings file")
+	} else {
+		f.Write(file)
+		log.Println("Rewrote settings file")
+	}
+}
+
+func loadSettingsFile(overrideRes bool) {
+	var settings SettingsFile
+
+	if file, err := ioutil.ReadFile("settings.json"); err == nil {
+		if err = json.Unmarshal(file, &settings); err != nil {
+			log.Println("Malformed settings file, rewriting with default settings")
+			saveSettingsFile()
+			loadSettingsFile(overrideRes)
+		} else {
+			appState.Settings.Music = settings.Music
+			if !overrideRes {
+				newRes := NewIVector2(int32(settings.ResolutionWidth), int32(settings.ResolutionHeight))
+				appState.Settings.Resolution = newRes
+				rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
+			}
+		}
+	} else {
+		log.Println("Settings file missing, writing with default settings")
+		saveSettingsFile()
+		loadSettingsFile(overrideRes)
+	}
+}
+
 func DrawSettingsPanel() {
+	appState.Settings.SelectedResolution = 0
+	for i, res := range resolutionList {
+		if res == resToString(appState.Settings.Resolution) {
+			appState.Settings.SelectedResolution = i
+		}
+	}
+
 	background := rl.NewRectangle(
 		appState.Settings.Resolution.ToVec2().X/2.0-300.0,
 		appState.Settings.Resolution.ToVec2().Y/2.0-250.0,
@@ -158,7 +230,7 @@ func DrawSettingsPanel() {
 	)
 
 	resolutionBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-245.0,
+		appState.Settings.Resolution.ToVec2().X/2.0-280.0,
 		appState.Settings.Resolution.ToVec2().Y/2.0-220.0,
 		60.0,
 		25.0,
@@ -182,7 +254,11 @@ func DrawSettingsPanel() {
 		25.0,
 		25.0,
 	)
-	appState.Settings.Music = rgui.CheckBox(musicCheckboxBackground, appState.Settings.Music)
+	musicToggle := rgui.CheckBox(musicCheckboxBackground, appState.Settings.Music)
+	if musicToggle != appState.Settings.Music {
+		appState.Settings.Music = musicToggle
+		saveSettingsFile()
+	}
 
 	closeButtonBackground := rl.NewRectangle(
 		appState.Settings.Resolution.ToVec2().X/2.0-40.0,
