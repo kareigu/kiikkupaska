@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"rendering"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -50,14 +49,8 @@ func drawDebugSettings() {
 	}
 
 	if utils.DrawButton(rl.NewVector2(50.0, 220.0), "Spawn enemy on cursor") {
-		nEnemy := Enemy{
-			Pos:    state.SelectionMode.Pos,
-			Health: 20.0,
-			State:  rendering.GOBLIN_IDLE,
-			Stats:  DefaultGoblinStats(),
-			Turn:   DefaultEnemyTurn(),
-		}
-		state.Enemies = append(state.Enemies, &nEnemy)
+		nEnemy := CreateRandomEnemy(state.SelectionMode.Pos)
+		state.Enemies = append(state.Enemies, nEnemy)
 	}
 }
 
@@ -126,7 +119,12 @@ func enemiesDebugInfo() {
 			X: closestEnemy.Pos.X / TILE_SIZE,
 			Y: closestEnemy.Pos.Y / TILE_SIZE,
 		}
-		data := fmt.Sprintf("Enemies in level: %v\nClosest Enemy: %.1f\nPos: %v\nState: %v", enemyCount, closestEnemy.DistanceToPlayer(), pos, closestEnemy.State)
+
+		p_pos := utils.IVector2{
+			X: closestEnemy.LastKnownPlayerPos.X / TILE_SIZE,
+			Y: closestEnemy.LastKnownPlayerPos.Y / TILE_SIZE,
+		}
+		data := fmt.Sprintf("Enemies in level: %v\nClosest Enemy: %.1f\nPos: %v\nLast player pos: %v", enemyCount, closestEnemy.DistanceToPlayer(), pos, p_pos)
 
 		background := rl.NewRectangle(50.0, state.AppState.RES.ToVec2().Y-350.0, 250.0, 180.0)
 		rl.DrawRectangleRec(background, rl.DarkGray)

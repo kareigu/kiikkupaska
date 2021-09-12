@@ -2,6 +2,7 @@ package game
 
 import (
 	"log"
+	"math"
 	"rendering"
 	"utils"
 
@@ -27,6 +28,11 @@ type Character interface {
 	GetStats() *Stats
 	StartTurn()
 	Draw()
+}
+
+func InVisRange(source utils.IVector2, target utils.IVector2, visStat uint8) bool {
+	visrange := int32(visStat) * TILE_SIZE
+	return !(target.X > source.X+(visrange) || target.X < source.X-(visrange) || target.Y > source.Y+(visrange) || target.Y < source.Y-(visrange))
 }
 
 type Player struct {
@@ -107,12 +113,13 @@ func (player *Player) Attack(enemy *Enemy) {
 }
 
 type Enemy struct {
-	Pos        utils.IVector2
-	State      int
-	Health     float32
-	LightLevel uint8
-	Stats      Stats
-	Turn       TurnData
+	Pos                utils.IVector2
+	State              int
+	Health             float32
+	LightLevel         uint8
+	LastKnownPlayerPos utils.IVector2
+	Stats              Stats
+	Turn               TurnData
 }
 
 func (enemy *Enemy) GetTurn() *TurnData {
@@ -135,56 +142,113 @@ func (enemy *Enemy) Draw() {
 }
 
 func (enemy *Enemy) DoAction() {
-	enemy.Move()
-	if !(enemy.Turn.Movement > 0) {
+	if enemy.Turn.Movement > 0 {
+		enemy.Move()
+	} else {
 		enemy.Turn.Done = true
 	}
 }
 
 func (enemy *Enemy) Move() {
-	if enemy.Turn.Movement > 0 {
-		e_x := enemy.Pos.X
-		e_y := enemy.Pos.Y
+	e_x := enemy.Pos.X
+	e_y := enemy.Pos.Y
 
-		switch rl.GetRandomValue(0, 3) {
-		case 0:
-			e_x -= TILE_SIZE
-		case 1:
-			e_x += TILE_SIZE
-		case 2:
-			e_y -= TILE_SIZE
-		case 3:
-			e_y += TILE_SIZE
-		}
+	/* 	if enemy.CanSeePlayer() {
+	   		enemy.LastKnownPlayerPos = state.Player.Pos
+	   	}
 
-		npos := utils.IVector2{X: e_x, Y: e_y}
+	   	if enemy.Pos == enemy.LastKnownPlayerPos {
+	   		switch rl.GetRandomValue(0, 3) {
+	   		case 0:
+	   			e_x -= TILE_SIZE
+	   		case 1:
+	   			e_x += TILE_SIZE
+	   		case 2:
+	   			e_y -= TILE_SIZE
+	   		case 3:
+	   			e_y += TILE_SIZE
+	   		}
 
-		if tile, ok := getTile(npos); ok {
-			if tile.Block {
-				return
+	   	} else {
+	   		enemy_pos := enemy.Pos
+	   		diff := rl.Vector2Subtract(enemy_pos.ToVec2(), enemy.LastKnownPlayerPos.ToVec2())
+
+	   		if diff.X != 0.0 {
+	   			if math.Signbit(float64(diff.X)) {
+	   				e_x -= TILE_SIZE
+	   			} else {
+	   				e_x += TILE_SIZE
+	   			}
+	   		} else if diff.Y != 0.0 {
+	   			if math.Signbit(float64(diff.Y)) {
+	   				e_y -= TILE_SIZE
+	   			} else {
+	   				e_y += TILE_SIZE
+	   			}
+	   		}
+
+	   		log.Printf("Trying to move to x: %d y: %d", e_x/TILE_SIZE, e_y/TILE_SIZE)
+
+	   	} */
+
+	if enemy.CanSeePlayer() {
+		enemy_pos := enemy.Pos
+		diff := rl.Vector2Subtract(enemy_pos.ToVec2(), enemy.LastKnownPlayerPos.ToVec2())
+
+		if diff.X != 0.0 {
+			if math.Signbit(float64(diff.X)) {
+				e_x -= TILE_SIZE
+			} else {
+				e_x += TILE_SIZE
 			}
-		} else {
-			return
+		} else if diff.Y != 0.0 {
+			if math.Signbit(float64(diff.Y)) {
+				e_y -= TILE_SIZE
+			} else {
+				e_y += TILE_SIZE
+			}
 		}
 
-		if state.Player.Pos == npos {
-			return
+		log.Printf("Trying to move to x: %d y: %d", e_x/TILE_SIZE, e_y/TILE_SIZE)
+	} else {
+		if enemy.Pos == enemy.LastKnownPlayerPos {
+			switch rl.GetRandomValue(0, 3) {
+			case 0:
+				e_x -= TILE_SIZE
+			case 1:
+				e_x += TILE_SIZE
+			case 2:
+				e_y -= TILE_SIZE
+			case 3:
+				e_y += TILE_SIZE
+			}
 		}
-
-		enemy.Pos.X = e_x
-		enemy.Pos.Y = e_y
-		enemy.Turn.Movement--
 	}
+
+	npos := utils.IVector2{X: e_x, Y: e_y}
+
+	if tile, ok := getTile(npos); ok {
+		if tile.Block {
+			return
+		}
+	} else {
+		return
+	}
+
+	if state.Player.Pos == npos {
+		return
+	}
+
+	/* if enemy.LastKnownPlayerPos == enemy.Pos {
+		enemy.LastKnownPlayerPos = npos
+	} */
+
+	enemy.Pos = npos
+	enemy.Turn.Movement--
 }
 
 func (enemy *Enemy) VisibleToPlayer() bool {
-	player := state.Player
-	visrange := int32(player.Stats.Visibility) * TILE_SIZE
-	if enemy.Pos.X > player.Pos.X+(visrange) || enemy.Pos.X < player.Pos.X-(visrange) || enemy.Pos.Y > player.Pos.Y+(visrange) || enemy.Pos.Y < player.Pos.Y-(visrange) {
-		return false
-	} else {
-		return true
-	}
+	return InVisRange(state.Player.Pos, enemy.Pos, state.Player.Stats.Visibility)
 }
 
 func (enemy *Enemy) DistanceToPlayer() float32 {
@@ -195,6 +259,10 @@ func (enemy *Enemy) DistanceToPlayer() float32 {
 	return distance
 }
 
+func (enemy *Enemy) CanSeePlayer() bool {
+	return InVisRange(enemy.Pos, state.Player.Pos, enemy.Stats.Visibility)
+}
+
 func (enemy *Enemy) LightEmittedToTile(tile *Tile) uint8 {
 	distance := tile.DistanceToEnemy(enemy)
 	return calculateLightLevel(distance, enemy.Stats.Visibility)
@@ -203,11 +271,12 @@ func (enemy *Enemy) LightEmittedToTile(tile *Tile) uint8 {
 func CreateRandomEnemy(pos utils.IVector2) *Enemy {
 	stats := DefaultGoblinStats()
 	new_enemy := Enemy{
-		Pos:    pos,
-		Health: float32(stats.Vitality) * 2.63,
-		State:  rendering.GOBLIN_IDLE,
-		Stats:  stats,
-		Turn:   DefaultEnemyTurn(),
+		Pos:                pos,
+		LastKnownPlayerPos: pos,
+		Health:             float32(stats.Vitality) * 2.63,
+		State:              rendering.GOBLIN_IDLE,
+		Stats:              stats,
+		Turn:               DefaultEnemyTurn(),
 	}
 	return &new_enemy
 }
