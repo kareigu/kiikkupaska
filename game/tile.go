@@ -48,6 +48,23 @@ func (tile *Tile) UpdateNeighbours() {
 	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
 		count += 8
 	}
+
+	if count == 0 {
+		count += 16
+		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
+			count += 1
+		}
+		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+			count += 2
+		}
+		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+			count += 4
+		}
+		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
+			count += 8
+		}
+	}
+
 	tile.Neighbours = count
 }
 
