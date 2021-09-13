@@ -28,10 +28,10 @@ func drawUI() {
 		}
 
 		if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {
-			utils.DrawMainText(rl.NewVector2(float32(RES.X)/2.7, float32(RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
+			utils.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
 		}
 	} else {
-		utils.DrawMainText(rl.NewVector2(float32(RES.X)/2.7, float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
+		utils.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
 	}
 
 	if state.DebugDisplay.Enabled {
