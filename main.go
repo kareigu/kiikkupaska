@@ -45,6 +45,7 @@ func init() {
 }
 
 func main() {
+	utils.InitUtils(&state, debugMode)
 	rl.InitWindow(state.Settings.Resolution.X, state.Settings.Resolution.Y, "Kiikkupaskaa")
 	rl.SetTargetFPS(int32(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor())))
 	rl.SetExitKey(rl.KeyF4)
@@ -52,7 +53,6 @@ func main() {
 	icon := rl.LoadImage("assets/fav.png")
 	rl.SetWindowIcon(*icon)
 
-	utils.InitUtils(&state, debugMode)
 	state.RenderAssets = rendering.LoadAssets()
 	rl.InitAudioDevice()
 

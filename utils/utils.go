@@ -207,8 +207,6 @@ func loadSettingsFile(overrideRes bool) {
 			if !overrideRes {
 				newRes := NewIVector2(int32(settings.ResolutionWidth), int32(settings.ResolutionHeight))
 				appState.Settings.Resolution = newRes
-				rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
-				centerWindow()
 			}
 		}
 	} else {
