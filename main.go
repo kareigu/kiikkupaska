@@ -63,13 +63,19 @@ func main() {
 	rl.PlayMusicStream(menuMusic)
 
 	exitWindow := false
+
+	go func(exit *bool) {
+		for !(*exit) {
+			if state.Settings.Music {
+				rl.SetMusicVolume(menuMusic, 0.4)
+				rl.UpdateMusicStream(menuMusic)
+			}
+		}
+	}(&exitWindow)
+
 	for !exitWindow {
 		exitWindow = rl.WindowShouldClose()
 		rl.SetWindowTitle(fmt.Sprintf("Kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
-		if state.Settings.Music {
-			rl.SetMusicVolume(menuMusic, 0.4)
-			rl.UpdateMusicStream(menuMusic)
-		}
 
 		switch state.View {
 		//*
