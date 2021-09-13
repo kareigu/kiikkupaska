@@ -98,7 +98,7 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		if state.Player.Turn.Done {
 			for _, enemy := range state.Enemies {
 				if !enemy.Turn.Done {
-					enemy.DoAction()
+					go enemy.DoAction()
 				}
 			}
 		}
