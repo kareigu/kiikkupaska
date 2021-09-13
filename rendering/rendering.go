@@ -9,6 +9,7 @@ import (
 )
 
 var Assets utils.RenderingAssets
+var appState *utils.State
 
 const (
 	TILE_FLOOR_STONE    = iota
@@ -19,7 +20,7 @@ const (
 	TILE_FLOOR_STONE_BL = iota
 )
 
-func LoadAssets() *utils.RenderingAssets {
+func LoadAssets(state *utils.State) *utils.RenderingAssets {
 	missingImg := rl.GenImageColor(32, 32, rl.Pink)
 	missingTexture := rl.LoadTextureFromImage(missingImg)
 	rl.UnloadImage(missingImg)
@@ -35,6 +36,7 @@ func LoadAssets() *utils.RenderingAssets {
 		TestTextures:     buildTileSet("wall_stone_tile"),
 	}
 	loadGUIStylesheet()
+	appState = state
 	return &Assets
 }
 

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	rgui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -120,7 +119,7 @@ type SettingsFile struct {
 	ResolutionHeight int  `json:"resolutionHeight"`
 }
 
-var resolutionList = []string{
+var ResolutionList = []string{
 	"Custom",
 	"800x600",
 	"1024x768",
@@ -132,7 +131,7 @@ var resolutionList = []string{
 	"3840x2160",
 }
 
-func stringToRes(s string) IVector2 {
+func StringToRes(s string) IVector2 {
 	if s == "Custom" {
 		return appState.Settings.Resolution
 	} else {
@@ -153,16 +152,16 @@ func stringToRes(s string) IVector2 {
 	}
 }
 
-func resToString(res IVector2) string {
+func ResToString(res IVector2) string {
 	return fmt.Sprintf("%dx%d", res.X, res.Y)
 }
 
-func handleResolutionChange(newRes IVector2) bool {
+func HandleResolutionChange(newRes IVector2) bool {
 	if newRes != appState.Settings.Resolution {
 		appState.Settings.Resolution = newRes
 		rl.SetWindowSize(int(appState.Settings.Resolution.X), int(appState.Settings.Resolution.Y))
 		centerWindow()
-		saveSettingsFile()
+		SaveSettingsFile()
 		return true
 	}
 	return false
@@ -177,7 +176,7 @@ func centerWindow() {
 	rl.SetWindowPosition(int(diff.X), int(diff.Y))
 }
 
-func saveSettingsFile() {
+func SaveSettingsFile() {
 	settings := SettingsFile{
 		Music:            appState.Settings.Music,
 		ResolutionWidth:  int(appState.Settings.Resolution.X),
@@ -200,7 +199,7 @@ func loadSettingsFile(overrideRes bool) {
 	if file, err := ioutil.ReadFile("settings.json"); err == nil {
 		if err = json.Unmarshal(file, &settings); err != nil {
 			log.Println("Malformed settings file, rewriting with default settings")
-			saveSettingsFile()
+			SaveSettingsFile()
 			loadSettingsFile(overrideRes)
 		} else {
 			appState.Settings.Music = settings.Music
@@ -211,112 +210,7 @@ func loadSettingsFile(overrideRes bool) {
 		}
 	} else {
 		log.Println("Settings file missing, writing with default settings")
-		saveSettingsFile()
+		SaveSettingsFile()
 		loadSettingsFile(overrideRes)
 	}
-}
-
-func DrawSettingsPanel() {
-	appState.Settings.SelectedResolution = 0
-	for i, res := range resolutionList {
-		if res == resToString(appState.Settings.Resolution) {
-			appState.Settings.SelectedResolution = i
-		}
-	}
-
-	background := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-300.0,
-		appState.Settings.Resolution.ToVec2().Y/2.0-250.0,
-		600.0,
-		500.0,
-	)
-	rl.DrawRectangleRounded(background, 0.05, 2, rl.NewColor(19, 26, 40, 255))
-
-	DrawSecondaryText(
-		rl.NewVector2(appState.Settings.Resolution.ToVec2().X/2.0, appState.Settings.Resolution.ToVec2().Y/2.0-250.0),
-		24.0,
-		"Resolution",
-		rl.RayWhite,
-	)
-
-	resolutionBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-280.0,
-		appState.Settings.Resolution.ToVec2().Y/2.0-220.0,
-		60.0,
-		25.0,
-	)
-
-	appState.Settings.SelectedResolution = rgui.ToggleGroup(resolutionBackground, resolutionList, appState.Settings.SelectedResolution)
-	if handleResolutionChange(stringToRes(resolutionList[appState.Settings.SelectedResolution])) {
-		log.Print("Switched resolution to ", resolutionList[appState.Settings.SelectedResolution])
-	}
-
-	DrawSecondaryText(
-		rl.NewVector2(
-			appState.Settings.Resolution.ToVec2().X/2.0-25.0,
-			appState.Settings.Resolution.ToVec2().Y/2.0+120.0,
-		),
-		25.0,
-		"Music",
-		rl.RayWhite,
-	)
-
-	musicCheckboxBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0+25.0,
-		appState.Settings.Resolution.ToVec2().Y/2.0+120.0,
-		25.0,
-		25.0,
-	)
-	musicToggle := rgui.CheckBox(musicCheckboxBackground, appState.Settings.Music)
-	if musicToggle != appState.Settings.Music {
-		appState.Settings.Music = musicToggle
-		saveSettingsFile()
-	}
-
-	// TODO: Move all this UI stuff inside the rendering package
-
-	checkboxTex := 4
-	if appState.Settings.Music {
-		checkboxTex = 3
-	}
-
-	rl.DrawTextureV(
-		appState.RenderAssets.UISprites[checkboxTex],
-		rl.NewVector2(musicCheckboxBackground.X, musicCheckboxBackground.Y),
-		rl.White,
-	)
-
-	closeButtonBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-40.0,
-		appState.Settings.Resolution.ToVec2().Y/2.0+220.0,
-		80.0,
-		25.0,
-	)
-	if rgui.Button(closeButtonBackground, "Close") {
-		appState.Settings.PanelVisible = false
-	}
-}
-
-func DrawButton(pos rl.Vector2, text string) bool {
-	const width = 100.0
-	pos.X -= width / 2.0
-	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: width, Height: 25.0}, text)
-}
-
-func DrawDefaultText(pos rl.Vector2, size float32, text string, colour rl.Color) {
-	width := rl.MeasureText(text, int32(size))
-	pos.X -= float32(width) / 2.0
-	rl.DrawText(text, int32(pos.X), int32(pos.Y), int32(size), colour)
-}
-
-func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {
-	width := rl.MeasureText(text, int32(size))
-	pos.X -= float32(width) / 2.0
-	rl.DrawTextEx(appState.RenderAssets.MainFont, text, pos, size, 1.0, colour)
-}
-
-func DrawSecondaryText(pos rl.Vector2, size float32, text string, colour rl.Color) {
-	width := rl.MeasureText(text, int32(size))
-	pos.X -= float32(width) / 2.0
-	rl.DrawTextEx(appState.RenderAssets.SecondaryFont, text, pos, size, 1.0, colour)
 }

@@ -53,7 +53,7 @@ func main() {
 	icon := rl.LoadImage("assets/fav.png")
 	rl.SetWindowIcon(*icon)
 
-	state.RenderAssets = rendering.LoadAssets()
+	state.RenderAssets = rendering.LoadAssets(&state)
 	rl.InitAudioDevice()
 
 	var gameState *game.GameState
@@ -85,13 +85,13 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
-			start := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
-			settings := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
-			exit := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
+			rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
+			start := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
+			settings := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
+			exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
 
 			if state.Settings.PanelVisible {
-				utils.DrawSettingsPanel()
+				rendering.DrawSettingsPanel()
 			}
 
 			rl.EndDrawing()
@@ -122,10 +122,10 @@ func main() {
 			rl.BeginDrawing()
 
 			rl.ClearBackground(rl.Black)
-			utils.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
+			rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
 
-			resume := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
-			exit := utils.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
+			resume := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
+			exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
 
 			rl.EndDrawing()
 

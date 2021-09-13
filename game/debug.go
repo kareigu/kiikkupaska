@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"rendering"
 	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -33,28 +34,28 @@ func handleTileDebugDisplay(tile *Tile) {
 }
 
 func drawDebugSettings() {
-	if utils.DrawButton(rl.NewVector2(100.0, 100.0), "No display") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 100.0), "No display") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
 	}
 
-	if utils.DrawButton(rl.NewVector2(100.0, 130.0), "Tile light level") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 130.0), "Tile light level") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
 	}
 
-	if utils.DrawButton(rl.NewVector2(100.0, 160.0), "Tile distance from player") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 160.0), "Tile distance from player") {
 		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 
-	if utils.DrawButton(rl.NewVector2(100.0, 190.0), "Teleport to cursor") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 190.0), "Teleport to cursor") {
 		state.Player.Pos = state.SelectionMode.Pos
 	}
 
-	if utils.DrawButton(rl.NewVector2(100.0, 220.0), "Spawn enemy on cursor") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 220.0), "Spawn enemy on cursor") {
 		nEnemy := CreateRandomEnemy(state.SelectionMode.Pos)
 		state.Enemies = append(state.Enemies, nEnemy)
 	}
 
-	if utils.DrawButton(rl.NewVector2(100.0, 250.0), "Toggle light fx") {
+	if rendering.DrawButton(rl.NewVector2(100.0, 250.0), "Toggle light fx") {
 		state.DebugDisplay.TileLightFx = !state.DebugDisplay.TileLightFx
 	}
 }

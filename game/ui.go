@@ -3,7 +3,6 @@ package game
 import (
 	"math"
 	"rendering"
-	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -28,10 +27,10 @@ func drawUI() {
 		}
 
 		if !(state.Player.Turn.Actions > 0) || !(state.Player.Turn.Movement > 0) {
-			utils.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
+			rendering.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/1.1), 48.0, "ENTER TO END TURN", rl.RayWhite)
 		}
 	} else {
-		utils.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
+		rendering.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
 	}
 
 	if state.DebugDisplay.Enabled {
