@@ -55,6 +55,7 @@ func drawCharacterPanel() {
 	)
 
 	rl.DrawRectangleRounded(background, 0.05, 2, rendering.PanelBackground)
+	rl.DrawRectangleRoundedLines(background, 0.05, 2, 2.0, rendering.GoldAccent)
 
 	rendering.DrawSecondaryText(
 		rl.NewVector2(

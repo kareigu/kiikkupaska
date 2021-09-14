@@ -8,7 +8,13 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var PanelBackground = rl.NewColor(19, 26, 40, 255)
+var (
+	PanelBackground       = rl.NewColor(19, 26, 40, 255)
+	ButtonBackground      = rl.NewColor(44, 60, 92, 255)
+	GoldAccent            = rl.NewColor(193, 153, 33, 255)
+	SilverAccent          = rl.NewColor(124, 118, 101, 255)
+	ButtonFocusBackground = rl.NewColor(61, 83, 128, 255)
+)
 
 func DrawMenuButtons(menu int, exitWindow *bool) {
 	topButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+50.0)
@@ -66,6 +72,7 @@ func DrawSettingsPanel() {
 		500.0,
 	)
 	rl.DrawRectangleRounded(background, 0.05, 2, PanelBackground)
+	rl.DrawRectangleRoundedLines(background, 0.05, 2, 2.0, GoldAccent)
 
 	DrawSecondaryText(
 		rl.NewVector2(appState.Settings.Resolution.ToVec2().X/2.0, appState.Settings.Resolution.ToVec2().Y/2.0-250.0),
@@ -141,10 +148,10 @@ func DrawButton(pos rl.Vector2, text string) bool {
 	rgui.ConstrainRectangle(&bounds, textWidth, textWidth+textPadding, textHeight, textHeight+textPadding/2)
 
 	state := rgui.GetInteractionState(bounds)
-	base_colour := rl.NewColor(44, 60, 92, 255)
-	base_border_colour := rl.NewColor(193, 153, 33, 255)
-	focus_colour := rl.NewColor(61, 83, 128, 255)
-	focus_border_colour := rl.NewColor(124, 118, 101, 255)
+	base_colour := ButtonBackground
+	base_border_colour := GoldAccent
+	focus_colour := ButtonFocusBackground
+	focus_border_colour := SilverAccent
 
 	colour := base_colour
 	border_colour := base_border_colour
