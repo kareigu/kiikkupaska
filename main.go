@@ -99,7 +99,7 @@ func main() {
 			//*
 			//*
 			case utils.MAIN_MENU:
-
+				gameState = nil
 				if rl.IsKeyPressed(rl.KeyEnter) {
 					state.View = utils.IN_GAME
 				}
@@ -107,58 +107,30 @@ func main() {
 				rl.BeginDrawing()
 
 				rl.ClearBackground(rl.Black)
-				rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
-				start := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
-				settings := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
-				exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
 
-				if state.Settings.PanelVisible {
-					rendering.DrawSettingsPanel()
-				}
+				rendering.DrawMenuButtons(state.View, &exitWindow)
 
 				rl.EndDrawing()
-				if start {
-					state.View = utils.IN_GAME
-				}
-				if settings {
-					state.Settings.PanelVisible = !state.Settings.PanelVisible
-				}
-				if exit {
-					exitWindow = true
-				}
 
 			//*
 			//*	Pause Menu UI
 			//*
 			//*
 			case utils.PAUSED:
-				if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyM) {
+				if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyP) {
 					state.View = utils.IN_GAME
 				}
 
 				if rl.IsKeyPressed(rl.KeyQ) {
-					gameState.AppState = nil
 					state.View = utils.MAIN_MENU
 				}
 
 				rl.BeginDrawing()
 
 				rl.ClearBackground(rl.Black)
-				rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
-
-				resume := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
-				exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
+				rendering.DrawMenuButtons(state.View, &exitWindow)
 
 				rl.EndDrawing()
-
-				if resume {
-					state.View = utils.IN_GAME
-				}
-
-				if exit {
-					gameState.AppState = nil
-					state.View = utils.MAIN_MENU
-				}
 
 			//*
 			//*	Game loop

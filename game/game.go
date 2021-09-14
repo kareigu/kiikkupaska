@@ -89,7 +89,7 @@ func initPlayerAndCam(state *utils.State) (*Player, *rl.Camera2D) {
 }
 
 func GameUpdate(appState *utils.State, gameState **GameState) {
-	if state.AppState == nil {
+	if *gameState == nil {
 		if !appState.Loading {
 			appState.Loading = true
 
