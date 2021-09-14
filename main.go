@@ -77,79 +77,96 @@ func main() {
 		exitWindow = rl.WindowShouldClose()
 		rl.SetWindowTitle(fmt.Sprintf("Kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
 
-		switch state.View {
-		//*
-		//*	Main Menu UI
-		//*
-		//*
-		case utils.MAIN_MENU:
-
-			if rl.IsKeyPressed(rl.KeyEnter) {
-				state.View = utils.IN_GAME
-			}
-
+		if state.Loading {
 			rl.BeginDrawing()
-
 			rl.ClearBackground(rl.Black)
-			rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
-			start := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
-			settings := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
-			exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
 
-			if state.Settings.PanelVisible {
-				rendering.DrawSettingsPanel()
-			}
+			rendering.DrawDefaultText(
+				rl.NewVector2(
+					state.Settings.Resolution.ToVec2().X/2.0,
+					state.Settings.Resolution.ToVec2().Y/2.0,
+				),
+				48.0,
+				"LOADING...",
+				rl.RayWhite,
+			)
 
 			rl.EndDrawing()
-			if start {
-				state.View = utils.IN_GAME
+		} else {
+			switch state.View {
+			//*
+			//*	Main Menu UI
+			//*
+			//*
+			case utils.MAIN_MENU:
+
+				if rl.IsKeyPressed(rl.KeyEnter) {
+					state.View = utils.IN_GAME
+				}
+
+				rl.BeginDrawing()
+
+				rl.ClearBackground(rl.Black)
+				rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y / 6)}, 96.0, "Main Menu", rl.RayWhite)
+				start := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "START")
+				settings := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
+				exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+150.0), "QUIT")
+
+				if state.Settings.PanelVisible {
+					rendering.DrawSettingsPanel()
+				}
+
+				rl.EndDrawing()
+				if start {
+					state.View = utils.IN_GAME
+				}
+				if settings {
+					state.Settings.PanelVisible = !state.Settings.PanelVisible
+				}
+				if exit {
+					exitWindow = true
+				}
+
+			//*
+			//*	Pause Menu UI
+			//*
+			//*
+			case utils.PAUSED:
+				if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyM) {
+					state.View = utils.IN_GAME
+				}
+
+				if rl.IsKeyPressed(rl.KeyQ) {
+					gameState.AppState = nil
+					state.View = utils.MAIN_MENU
+				}
+
+				rl.BeginDrawing()
+
+				rl.ClearBackground(rl.Black)
+				rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
+
+				resume := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
+				exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
+
+				rl.EndDrawing()
+
+				if resume {
+					state.View = utils.IN_GAME
+				}
+
+				if exit {
+					gameState.AppState = nil
+					state.View = utils.MAIN_MENU
+				}
+
+			//*
+			//*	Game loop
+			//*
+			//*
+			case utils.IN_GAME:
+				game.GameUpdate(&state, &gameState)
 			}
-			if settings {
-				state.Settings.PanelVisible = !state.Settings.PanelVisible
-			}
-			if exit {
-				exitWindow = true
-			}
-
-		//*
-		//*	Pause Menu UI
-		//*
-		//*
-		case utils.PAUSED:
-			if rl.IsKeyPressed(rl.KeyEscape) || rl.IsKeyPressed(rl.KeyM) {
-				state.View = utils.IN_GAME
-			}
-
-			if rl.IsKeyPressed(rl.KeyQ) {
-				gameState.AppState = nil
-				state.View = utils.MAIN_MENU
-			}
-
-			rl.BeginDrawing()
-
-			rl.ClearBackground(rl.Black)
-			rendering.DrawMainText(rl.Vector2{X: float32(state.Settings.Resolution.X / 2), Y: float32(state.Settings.Resolution.Y) / 6.0}, 96.0, "Paused", rl.RayWhite)
-
-			resume := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+50.0), "RESUME")
-			exit := rendering.DrawButton(rl.NewVector2(float32(state.Settings.Resolution.X)/2.0, float32(state.Settings.Resolution.Y)/2.0+100.0), "EXIT TO MENU")
-
-			rl.EndDrawing()
-
-			if resume {
-				state.View = utils.IN_GAME
-			}
-
-			if exit {
-				gameState.AppState = nil
-				state.View = utils.MAIN_MENU
-			}
-
-		//*
-		//*	Game loop
-		//*
-		//*
-		case utils.IN_GAME:
-			game.GameUpdate(&state, &gameState)
 		}
 	}
 

@@ -49,6 +49,7 @@ func InitGame(appState *utils.State) *GameState {
 		},
 		tempTimeSinceTurn: 0.0,
 	}
+
 	state.Map, state.Enemies = GenerateLevel()
 	return &state
 }
@@ -89,9 +90,14 @@ func initPlayerAndCam(state *utils.State) (*Player, *rl.Camera2D) {
 
 func GameUpdate(appState *utils.State, gameState **GameState) {
 	if state.AppState == nil {
-		appState.Loading = true
-		*gameState = InitGame(appState)
-		appState.Loading = false
+		if !appState.Loading {
+			appState.Loading = true
+
+			go func() {
+				*gameState = InitGame(appState)
+				appState.Loading = false
+			}()
+		}
 	} else {
 		HandleControls()
 
