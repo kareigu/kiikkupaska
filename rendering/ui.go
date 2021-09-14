@@ -17,43 +17,43 @@ var (
 )
 
 func DrawMenuButtons(menu int, exitWindow *bool) {
-	topButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+50.0)
-	botButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+150.0)
+
 	DrawMainText(rl.Vector2{X: float32(appState.Settings.Resolution.X / 2), Y: float32(appState.Settings.Resolution.Y / 6)}, 96.0, "KIIKKUPASKAA", rl.RayWhite)
-
-	settings := DrawButton(rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
-
-	if menu == utils.MAIN_MENU {
-		start := DrawButton(topButtonPos, "START")
-		exit := DrawButton(botButtonPos, "QUIT")
-
-		if start {
-			appState.View = utils.IN_GAME
-		}
-
-		if exit {
-			*exitWindow = true
-		}
-	}
-
-	if menu == utils.PAUSED {
-		resume := DrawButton(topButtonPos, "RESUME")
-		exit := DrawButton(botButtonPos, "EXIT TO MENU")
-
-		if resume {
-			appState.View = utils.IN_GAME
-		}
-
-		if exit {
-			appState.View = utils.MAIN_MENU
-		}
-	}
-
 	if appState.Settings.PanelVisible {
 		DrawSettingsPanel()
-	}
-	if settings {
-		appState.Settings.PanelVisible = !appState.Settings.PanelVisible
+	} else {
+		settings := DrawButton(rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+100.0), "SETTINGS")
+
+		if settings {
+			appState.Settings.PanelVisible = !appState.Settings.PanelVisible
+		}
+		topButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+50.0)
+		botButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+150.0)
+		if menu == utils.MAIN_MENU {
+			start := DrawButton(topButtonPos, "START")
+			exit := DrawButton(botButtonPos, "QUIT")
+
+			if start {
+				appState.View = utils.IN_GAME
+			}
+
+			if exit {
+				*exitWindow = true
+			}
+		}
+
+		if menu == utils.PAUSED {
+			resume := DrawButton(topButtonPos, "RESUME")
+			exit := DrawButton(botButtonPos, "EXIT TO MENU")
+
+			if resume {
+				appState.View = utils.IN_GAME
+			}
+
+			if exit {
+				appState.View = utils.MAIN_MENU
+			}
+		}
 	}
 }
 
