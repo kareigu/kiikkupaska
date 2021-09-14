@@ -21,7 +21,7 @@ const (
 )
 
 func handleTileDebugDisplay(tile *Tile) {
-	switch state.DebugDisplay.TileDisplayMode {
+	switch state.UIState.DebugDisplay.TileDisplayMode {
 	case DD_TILE_LIGHT:
 		//! Tile light debug display
 		rl.DrawText(fmt.Sprintf("%d", tile.LightLevel), tile.Pos.X, tile.Pos.Y, 12, rl.Red)
@@ -35,28 +35,28 @@ func handleTileDebugDisplay(tile *Tile) {
 
 func drawDebugSettings() {
 	if rendering.DrawButton(rl.NewVector2(100.0, 100.0), "No display") {
-		state.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
+		state.UIState.DebugDisplay.TileDisplayMode = DD_TILE_NO_DISPLAY
 	}
 
 	if rendering.DrawButton(rl.NewVector2(100.0, 130.0), "Tile light level") {
-		state.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
+		state.UIState.DebugDisplay.TileDisplayMode = DD_TILE_LIGHT
 	}
 
 	if rendering.DrawButton(rl.NewVector2(100.0, 160.0), "Tile distance from player") {
-		state.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
+		state.UIState.DebugDisplay.TileDisplayMode = DD_TILE_DISTANCE_FROM_PLAYER
 	}
 
 	if rendering.DrawButton(rl.NewVector2(100.0, 190.0), "Teleport to cursor") {
-		state.Player.Pos = state.SelectionMode.Pos
+		state.Player.Pos = state.UIState.SelectionMode.Pos
 	}
 
 	if rendering.DrawButton(rl.NewVector2(100.0, 220.0), "Spawn enemy on cursor") {
-		nEnemy := CreateRandomEnemy(state.SelectionMode.Pos)
+		nEnemy := CreateRandomEnemy(state.UIState.SelectionMode.Pos)
 		state.Enemies = append(state.Enemies, nEnemy)
 	}
 
 	if rendering.DrawButton(rl.NewVector2(100.0, 250.0), "Toggle light fx") {
-		state.DebugDisplay.TileLightFx = !state.DebugDisplay.TileLightFx
+		state.UIState.DebugDisplay.TileLightFx = !state.UIState.DebugDisplay.TileLightFx
 	}
 }
 
@@ -71,8 +71,8 @@ func drawDebugInfo() {
 func tileDebugInfo() {
 	var tile *Tile
 	var sourcePos utils.IVector2
-	if state.SelectionMode.Using {
-		sourcePos = state.SelectionMode.Pos
+	if state.UIState.SelectionMode.Using {
+		sourcePos = state.UIState.SelectionMode.Pos
 	} else {
 		sourcePos = state.Player.Pos
 	}

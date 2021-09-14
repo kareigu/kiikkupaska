@@ -13,20 +13,14 @@ const PLAYER_OFFSET_X int32 = 0
 const PLAYER_OFFSET_Y int32 = 0
 
 type GameState struct {
-	AppState      *utils.State
-	Camera        *rl.Camera2D
-	Player        *Player
-	Map           [][]*Tile
-	Enemies       []*Enemy
-	SelectionMode SelectionMode
-	DebugDisplay  DebugDisplayData
+	AppState *utils.State
+	Camera   *rl.Camera2D
+	Player   *Player
+	Map      [][]*Tile
+	Enemies  []*Enemy
+	UIState  UIState
 
 	tempTimeSinceTurn float32
-}
-
-type SelectionMode struct {
-	Using bool
-	Pos   utils.IVector2
 }
 
 var state GameState
@@ -34,19 +28,11 @@ var state GameState
 func InitGame(appState *utils.State) *GameState {
 	player, cam := initPlayerAndCam(appState)
 	state = GameState{
-		AppState: appState,
-		Player:   player,
-		Camera:   cam,
-		Map:      nil,
-		DebugDisplay: DebugDisplayData{
-			Enabled:         false,
-			TileDisplayMode: DD_TILE_NO_DISPLAY,
-			TileLightFx:     true,
-		},
-		SelectionMode: SelectionMode{
-			Using: false,
-			Pos:   player.Pos,
-		},
+		AppState:          appState,
+		Player:            player,
+		Camera:            cam,
+		Map:               nil,
+		UIState:           NewUIState(player),
 		tempTimeSinceTurn: 0.0,
 	}
 
@@ -155,7 +141,7 @@ func GameUpdate(appState *utils.State, gameState **GameState) {
 		for _, tile := range tilesToDraw {
 			tile.Draw()
 
-			if state.DebugDisplay.Enabled {
+			if state.UIState.DebugDisplay.Enabled {
 				handleTileDebugDisplay(tile)
 			}
 		}

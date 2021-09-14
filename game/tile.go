@@ -20,7 +20,7 @@ func (tile *Tile) Draw() {
 	texture := rendering.GetTile(tile.Type)
 	colour := rl.White
 
-	if state.DebugDisplay.TileLightFx {
+	if state.UIState.DebugDisplay.TileLightFx {
 		colour.A = tile.LightLevel
 	}
 

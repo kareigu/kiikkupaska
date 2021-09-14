@@ -3,14 +3,41 @@ package game
 import (
 	"math"
 	"rendering"
+	"utils"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type UIState struct {
+	CharacterPanelOpen bool
+	SelectionMode      SelectionMode
+	DebugDisplay       DebugDisplayData
+}
+
+type SelectionMode struct {
+	Using bool
+	Pos   utils.IVector2
+}
+
+func NewUIState(player *Player) UIState {
+	return UIState{
+		CharacterPanelOpen: false,
+		DebugDisplay: DebugDisplayData{
+			Enabled:         false,
+			TileDisplayMode: DD_TILE_NO_DISPLAY,
+			TileLightFx:     true,
+		},
+		SelectionMode: SelectionMode{
+			Using: false,
+			Pos:   player.Pos,
+		},
+	}
+}
+
 func drawSelectionCursor() {
-	if state.SelectionMode.Using {
+	if state.UIState.SelectionMode.Using {
 		alpha := float32((math.Cos(3.0*float64(rl.GetTime())) + 1) * 0.5)
-		rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_SELECTION_MARK), state.SelectionMode.Pos.X, state.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
+		rl.DrawTexture(*rendering.GetUISprite(rendering.SPRITE_SELECTION_MARK), state.UIState.SelectionMode.Pos.X, state.UIState.SelectionMode.Pos.Y, rl.ColorAlpha(rl.White, alpha))
 	}
 }
 
@@ -33,7 +60,7 @@ func drawUI() {
 		rendering.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
 	}
 
-	if state.DebugDisplay.Enabled {
+	if state.UIState.DebugDisplay.Enabled {
 		drawDebugSettings()
 		drawDebugInfo()
 	}
