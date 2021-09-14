@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"runtime"
 
 	"game"
@@ -78,6 +79,16 @@ func main() {
 		rl.SetWindowTitle(fmt.Sprintf("Kiikkupaskaa | %f fps %fms", rl.GetFPS(), rl.GetFrameTime()*1000.0))
 
 		if state.Loading {
+			sin := math.Sin(2.0*float64(rl.GetTime())) + 1.0
+			dots := "."
+			if sin > 0.66 {
+				dots = ".."
+			}
+			if sin > 1.66 {
+				dots = "..."
+			}
+			text := fmt.Sprintf("LOADING%v", dots)
+
 			rl.BeginDrawing()
 			rl.ClearBackground(rl.Black)
 
@@ -87,7 +98,7 @@ func main() {
 					state.Settings.Resolution.ToVec2().Y/2.0,
 				),
 				48.0,
-				"LOADING...",
+				text,
 				rl.RayWhite,
 			)
 
