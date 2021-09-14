@@ -8,6 +8,8 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+var PanelBackground = rl.NewColor(19, 26, 40, 255)
+
 func DrawMenuButtons(menu int, exitWindow *bool) {
 	topButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+50.0)
 	botButtonPos := rl.NewVector2(float32(appState.Settings.Resolution.X)/2.0, float32(appState.Settings.Resolution.Y)/2.0+150.0)
@@ -63,7 +65,7 @@ func DrawSettingsPanel() {
 		600.0,
 		500.0,
 	)
-	rl.DrawRectangleRounded(background, 0.05, 2, rl.NewColor(19, 26, 40, 255))
+	rl.DrawRectangleRounded(background, 0.05, 2, PanelBackground)
 
 	DrawSecondaryText(
 		rl.NewVector2(appState.Settings.Resolution.ToVec2().X/2.0, appState.Settings.Resolution.ToVec2().Y/2.0-250.0),

@@ -39,6 +39,10 @@ func HandleControls() {
 		state.AppState.View = utils.PAUSED
 	}
 
+	if rl.IsKeyPressed(rl.KeyC) {
+		state.UIState.CharacterPanelOpen = !state.UIState.CharacterPanelOpen
+	}
+
 	zoomMult := float32(rl.GetMouseWheelMove()) * 0.1
 	if state.Camera.Zoom+zoomMult > 0.2 {
 		state.Camera.Zoom += zoomMult

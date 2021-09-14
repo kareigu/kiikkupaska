@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"math"
 	"rendering"
 	"utils"
@@ -41,6 +42,89 @@ func drawSelectionCursor() {
 	}
 }
 
+func drawCharacterPanel() {
+	xPos := float32(25.0)
+	yPos := state.AppState.Settings.Resolution.ToVec2().Y/2.0 - 250.0
+	panelWidth := float32(400.0)
+	panelHeight := float32(300.0)
+	background := rl.NewRectangle(
+		xPos,
+		yPos,
+		panelWidth,
+		panelHeight,
+	)
+
+	rl.DrawRectangleRounded(background, 0.05, 2, rendering.PanelBackground)
+
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/2.0,
+			yPos+8.0,
+		),
+		24.0,
+		"CHARACTER",
+		rl.RayWhite,
+	)
+
+	rl.DrawTexture(*rendering.GetCharacterSprite(state.Player.State), int32(xPos)+10, int32(yPos)+8, rl.White)
+
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/4.0,
+			yPos+32.0,
+		),
+		24.0,
+		"STATS",
+		rl.RayWhite,
+	)
+
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/5.5,
+			yPos+64.0,
+		),
+		24.0,
+		fmt.Sprintf("strength %v", state.Player.Stats.Strength),
+		rl.RayWhite,
+	)
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/5.5,
+			yPos+86.0,
+		),
+		24.0,
+		fmt.Sprintf("dexterity %v", state.Player.Stats.Dexterity),
+		rl.RayWhite,
+	)
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/5.5,
+			yPos+108.0,
+		),
+		24.0,
+		fmt.Sprintf("vitality %v", state.Player.Stats.Vitality),
+		rl.RayWhite,
+	)
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/5.5,
+			yPos+130.0,
+		),
+		24.0,
+		fmt.Sprintf("movement %v", state.Player.Stats.Movement),
+		rl.RayWhite,
+	)
+	rendering.DrawSecondaryText(
+		rl.NewVector2(
+			xPos+panelWidth/5.5,
+			yPos+152.0,
+		),
+		24.0,
+		fmt.Sprintf("visibility %v", state.Player.Stats.Visibility),
+		rl.RayWhite,
+	)
+}
+
 func drawUI() {
 	RES := state.AppState.Settings.Resolution
 	if !state.Player.Turn.Done {
@@ -58,6 +142,10 @@ func drawUI() {
 		}
 	} else {
 		rendering.DrawMainText(rl.NewVector2(float32(RES.X/2), float32(RES.Y)/8.0), 48.0, "PROCESSING TURNS", rl.RayWhite)
+	}
+
+	if state.UIState.CharacterPanelOpen {
+		drawCharacterPanel()
 	}
 
 	if state.UIState.DebugDisplay.Enabled {
