@@ -106,8 +106,6 @@ func DrawSettingsPanel() {
 		utils.SaveSettingsFile()
 	}
 
-	// TODO: Move all this UI stuff inside the rendering package
-
 	checkboxTex := SPRITE_CROSS
 	if appState.Settings.Music {
 		checkboxTex = SPRITE_CHECKMARK
@@ -119,21 +117,54 @@ func DrawSettingsPanel() {
 		rl.White,
 	)
 
-	closeButtonBackground := rl.NewRectangle(
-		appState.Settings.Resolution.ToVec2().X/2.0-40.0,
+	closeButtonPos := rl.NewVector2(
+		appState.Settings.Resolution.ToVec2().X/2.0,
 		appState.Settings.Resolution.ToVec2().Y/2.0+220.0,
-		80.0,
-		25.0,
 	)
-	if rgui.Button(closeButtonBackground, "Close") {
+	if DrawButton(closeButtonPos, "Close") {
 		appState.Settings.PanelVisible = false
 	}
 }
 
 func DrawButton(pos rl.Vector2, text string) bool {
 	const width = 100.0
+	const height = 25.0
+	const textPadding = 4
+
 	pos.X -= width / 2.0
-	return rgui.Button(rl.Rectangle{X: pos.X, Y: pos.Y, Width: width, Height: 25.0}, text)
+	textHeight := appState.RenderAssets.SecondaryFont.BaseSize
+	textWidth := rl.MeasureText(text, textHeight)
+	bounds := rl.NewRectangle(pos.X, pos.Y, width, height)
+
+	rgui.ConstrainRectangle(&bounds, textWidth, textWidth+textPadding, textHeight, textHeight+textPadding/2)
+
+	state := rgui.GetInteractionState(bounds)
+	base_colour := rl.NewColor(44, 60, 92, 255)
+	base_border_colour := rl.NewColor(193, 153, 33, 255)
+	focus_colour := rl.NewColor(61, 83, 128, 255)
+	focus_border_colour := rl.NewColor(124, 118, 101, 255)
+
+	colour := base_colour
+	border_colour := base_border_colour
+
+	if state == rgui.Focused {
+		colour = focus_colour
+		border_colour = focus_border_colour
+	}
+	if state == rgui.Clicked {
+		colour = base_border_colour
+		border_colour = base_colour
+	}
+
+	b := bounds.ToInt32()
+	rgui.DrawBorderedRectangle(b, 2, border_colour, colour)
+	textPos := rl.NewVector2(
+		float32(b.X+(b.Width/2)+textPadding),
+		float32(b.Y+((b.Height/2)-(textHeight/2))),
+	)
+	DrawSecondaryText(textPos, float32(textHeight), text, rl.RayWhite)
+
+	return state == rgui.Clicked
 }
 
 func DrawDefaultText(pos rl.Vector2, size float32, text string, colour rl.Color) {
@@ -144,7 +175,7 @@ func DrawDefaultText(pos rl.Vector2, size float32, text string, colour rl.Color)
 
 func DrawMainText(pos rl.Vector2, size float32, text string, colour rl.Color) {
 	width := rl.MeasureText(text, int32(size))
-	pos.X -= float32(width) / 2.0
+	pos.X -= float32(width / 2)
 	rl.DrawTextEx(appState.RenderAssets.MainFont, text, pos, size, 1.0, colour)
 }
 
