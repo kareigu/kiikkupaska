@@ -34,7 +34,7 @@ func init() {
 
 	debugMode = *debugFlag
 	state = utils.State{
-		Loading: false,
+		Loading: true,
 		View:    utils.MAIN_MENU,
 		Settings: utils.Settings{
 			PanelVisible: false,
@@ -103,6 +103,11 @@ func main() {
 			)
 
 			rl.EndDrawing()
+
+			if !state.RenderAssets.TestTextures.Loaded {
+				state.RenderAssets.TestTextures = rendering.BuildTileSet("wall_stone_tile")
+				state.Loading = false
+			}
 		} else {
 			switch state.View {
 			//*

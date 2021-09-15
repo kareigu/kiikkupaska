@@ -2,6 +2,8 @@ package rendering
 
 import (
 	"fmt"
+	"log"
+	"time"
 	"utils"
 
 	rgui "github.com/gen2brain/raylib-go/raygui"
@@ -33,7 +35,6 @@ func LoadAssets(state *utils.State) *utils.RenderingAssets {
 		MissingTexture:   &missingTexture,
 		MainFont:         main,
 		SecondaryFont:    sec,
-		TestTextures:     buildTileSet("wall_stone_tile"),
 	}
 	loadGUIStylesheet()
 	appState = state
@@ -50,7 +51,7 @@ func Cleanup() {
 	for _, t := range Assets.UISprites {
 		rl.UnloadTexture(t)
 	}
-	for _, t := range Assets.TestTextures {
+	for _, t := range Assets.TestTextures.Textures {
 		rl.UnloadTexture(t)
 	}
 	rl.UnloadFont(Assets.MainFont)
@@ -69,7 +70,8 @@ func loadTileTextures() []rl.Texture2D {
 	return texturelist
 }
 
-func buildTileSet(name string) []rl.Texture2D {
+func BuildTileSet(name string) utils.TileSet {
+	t := time.Now()
 	base := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, fmt.Sprintf("%v.png", name)))
 	rect := rl.NewRectangle(0.0, 0.0, 32.0, 32.0)
 
@@ -130,24 +132,6 @@ func buildTileSet(name string) []rl.Texture2D {
 	rl.ImageDraw(all_tile, down_right, rect, rect, rl.White)
 	rl.ImageDraw(all_tile, down_left, rect, rect, rl.White)
 
-	texturelist := make([]rl.Texture2D, 16*2)
-	texturelist[0] = rl.LoadTextureFromImage(base)
-	texturelist[1] = rl.LoadTextureFromImage(up_tile)
-	texturelist[2] = rl.LoadTextureFromImage(right_tile)
-	texturelist[3] = rl.LoadTextureFromImage(up_right_tile)
-	texturelist[4] = rl.LoadTextureFromImage(down_tile)
-	texturelist[5] = rl.LoadTextureFromImage(up_down_tile)
-	texturelist[6] = rl.LoadTextureFromImage(down_right_tile)
-	texturelist[7] = rl.LoadTextureFromImage(up_right_down_tile)
-	texturelist[8] = rl.LoadTextureFromImage(left_tile)
-	texturelist[9] = rl.LoadTextureFromImage(up_left_tile)
-	texturelist[10] = rl.LoadTextureFromImage(right_left_tile)
-	texturelist[11] = rl.LoadTextureFromImage(up_right_left_tile)
-	texturelist[12] = rl.LoadTextureFromImage(down_left_tile)
-	texturelist[13] = rl.LoadTextureFromImage(up_down_left_tile)
-	texturelist[14] = rl.LoadTextureFromImage(right_down_left_tile)
-	texturelist[15] = rl.LoadTextureFromImage(all_tile)
-
 	in_up_right := rl.LoadImage(utils.GetAssetPath(utils.TEXTURE, fmt.Sprintf("%v_incor.png", name)))
 	in_down_right := rl.ImageCopy(in_up_right)
 	rl.ImageFlipVertical(in_down_right)
@@ -165,48 +149,93 @@ func buildTileSet(name string) []rl.Texture2D {
 	in_up_left_tile := rl.ImageCopy(base)
 	rl.ImageDraw(in_up_left_tile, in_up_left, rect, rect, rl.White)
 
-	texturelist[16] = texturelist[0]
-	texturelist[16+1] = rl.LoadTextureFromImage(in_up_right_tile)
-	texturelist[16+2] = rl.LoadTextureFromImage(in_down_right_tile)
-	texturelist[16+3] = rl.LoadTextureFromImage(base)
-	texturelist[16+4] = rl.LoadTextureFromImage(in_down_left_tile)
-	texturelist[16+5] = rl.LoadTextureFromImage(base)
-	texturelist[16+6] = rl.LoadTextureFromImage(base)
-	texturelist[16+7] = rl.LoadTextureFromImage(base)
-	texturelist[16+8] = rl.LoadTextureFromImage(in_up_left_tile)
-	texturelist[16+9] = rl.LoadTextureFromImage(base)
-	texturelist[16+10] = rl.LoadTextureFromImage(base)
-	texturelist[16+11] = rl.LoadTextureFromImage(base)
-	texturelist[16+12] = rl.LoadTextureFromImage(base)
-	texturelist[16+13] = rl.LoadTextureFromImage(base)
-	texturelist[16+14] = rl.LoadTextureFromImage(base)
-	texturelist[16+15] = rl.LoadTextureFromImage(base)
+	parts := [13]*rl.Image{
+		base,
+		up,
+		up_right,
+		right,
+		down_right,
+		down,
+		down_left,
+		left,
+		up_left,
+		in_up_right,
+		in_down_right,
+		in_down_left,
+		in_up_left,
+	}
 
-	rl.UnloadImage(base)
-	rl.UnloadImage(up)
-	rl.UnloadImage(down)
-	rl.UnloadImage(right)
-	rl.UnloadImage(left)
-	rl.UnloadImage(up_tile)
-	rl.UnloadImage(right_tile)
-	rl.UnloadImage(down_tile)
-	rl.UnloadImage(left_tile)
-	rl.UnloadImage(up_right_tile)
-	rl.UnloadImage(up_left_tile)
-	rl.UnloadImage(up_down_tile)
-	rl.UnloadImage(down_right_tile)
-	rl.UnloadImage(down_left_tile)
-	rl.UnloadImage(right_left_tile)
-	rl.UnloadImage(up_right_down_tile)
-	rl.UnloadImage(up_right_left_tile)
-	rl.UnloadImage(up_down_left_tile)
-	rl.UnloadImage(right_down_left_tile)
-	rl.UnloadImage(all_tile)
-	rl.UnloadImage(in_up_right)
+	var texturelist [4096]rl.Texture2D
+	for i := 0; i < 4096; i++ {
+		texturelist[i] = rl.LoadTextureFromImage(buildTile(&parts, uint16(i)))
+	}
 
-	rl.UnloadImage(in_up_right_tile)
+	log.Printf("%v tileset built in %v", name, time.Since(t))
 
-	return texturelist
+	return utils.TileSet{
+		Parts:    parts,
+		Textures: texturelist,
+		Loaded:   true,
+	}
+}
+
+func buildTile(parts *[13]*rl.Image, n uint16) *rl.Image {
+	const TILE_SIZE float32 = 32.0
+	tile := rl.ImageCopy(parts[0])
+	rect := rl.NewRectangle(0.0, 0.0, TILE_SIZE, TILE_SIZE)
+	//top_right := rl.NewRectangle(TILE_SIZE/2, 0.0, TILE_SIZE, TILE_SIZE/2)
+
+	fmt.Printf("%v : %v\n", n, n&1)
+
+	if n&1 > 0 {
+		rl.ImageDraw(tile, parts[1], rect, rect, rl.White)
+	}
+
+	if n&8 > 0 {
+		rl.ImageDraw(tile, parts[3], rect, rect, rl.White)
+	}
+
+	if n&64 > 0 {
+		rl.ImageDraw(tile, parts[5], rect, rect, rl.White)
+	}
+
+	if n&512 > 0 {
+		rl.ImageDraw(tile, parts[7], rect, rect, rl.White)
+	}
+
+	if n&2 > 0 {
+		rl.ImageDraw(tile, parts[2], rect, rect, rl.White)
+	}
+
+	if n&4 > 0 {
+		rl.ImageDraw(tile, parts[9], rect, rect, rl.White)
+	}
+
+	if n&16 > 0 {
+		rl.ImageDraw(tile, parts[4], rect, rect, rl.White)
+	}
+
+	if n&32 > 0 {
+		rl.ImageDraw(tile, parts[10], rect, rect, rl.White)
+	}
+
+	if n&128 > 0 {
+		rl.ImageDraw(tile, parts[6], rect, rect, rl.White)
+	}
+
+	if n&256 > 0 {
+		rl.ImageDraw(tile, parts[11], rect, rect, rl.White)
+	}
+
+	if n&1024 > 0 {
+		rl.ImageDraw(tile, parts[8], rect, rect, rl.White)
+	}
+
+	if n&2048 > 0 {
+		rl.ImageDraw(tile, parts[12], rect, rect, rl.White)
+	}
+
+	return tile
 }
 
 func GetTile(tileType int) *rl.Texture2D {

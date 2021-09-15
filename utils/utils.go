@@ -49,7 +49,25 @@ type RenderingAssets struct {
 	MissingTexture   *rl.Texture2D
 	MainFont         rl.Font
 	SecondaryFont    rl.Font
-	TestTextures     []rl.Texture2D
+	TestTextures     TileSet
+}
+
+type TileSet struct {
+	Parts    [13]*rl.Image
+	Textures [4096]rl.Texture2D
+	Loaded   bool
+}
+
+func (tileset *TileSet) GetTexture(neighbours uint16) *rl.Texture2D {
+	if neighbours > 4096 {
+		return appState.RenderAssets.MissingTexture
+	}
+
+	if tex := tileset.Textures[neighbours]; tex.Height != 0 {
+		return &tex
+	} else {
+		return appState.RenderAssets.MissingTexture
+	}
 }
 
 type IVector2 struct {

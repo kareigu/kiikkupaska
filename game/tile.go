@@ -12,7 +12,7 @@ type Tile struct {
 	Type       int
 	Pos        utils.IVector2
 	Block      bool
-	Neighbours uint8
+	Neighbours uint16
 	LightLevel uint8
 }
 
@@ -25,43 +25,55 @@ func (tile *Tile) Draw() {
 	}
 
 	if tile.Type == rendering.TILE_WALL_STONE {
-		textures := &state.AppState.RenderAssets.TestTextures
 		tile.UpdateNeighbours()
 
-		rl.DrawTexture((*textures)[tile.Neighbours], tile.Pos.X, tile.Pos.Y, colour)
+		rl.DrawTexture(*state.AppState.RenderAssets.TestTextures.GetTexture(tile.Neighbours), tile.Pos.X, tile.Pos.Y, colour)
 	} else {
 		rl.DrawTexture(*texture, tile.Pos.X, tile.Pos.Y, colour)
 	}
 }
 
 func (tile *Tile) UpdateNeighbours() {
-	count := uint8(0)
+	count := uint16(0)
 	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
 		count += 1
 	}
 	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
-		count += 2
-	}
-	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
-		count += 4
-	}
-	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
 		count += 8
 	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+		count += 64
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y)); ok && nb.Type != tile.Type {
+		count += 512
+	}
 
-	if count == 0 {
-		count += 16
-		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
-			count += 1
-		}
-		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
+		if count&1 > 0 && count&8 > 0 {
 			count += 2
-		}
-		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+		} else {
 			count += 4
 		}
-		if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
-			count += 8
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X+TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+		if count&8 > 0 && count&64 > 0 {
+			count += 16
+		} else {
+			count += 32
+		}
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y+TILE_SIZE)); ok && nb.Type != tile.Type {
+		if count&64 > 0 && count&512 > 0 {
+			count += 128
+		} else {
+			count += 256
+		}
+	}
+	if nb, ok := GetMapTile(utils.NewIVector2(tile.Pos.X-TILE_SIZE, tile.Pos.Y-TILE_SIZE)); ok && nb.Type != tile.Type {
+		if count&512 > 0 && count&1 > 0 {
+			count += 1024
+		} else {
+			count += 2048
 		}
 	}
 
