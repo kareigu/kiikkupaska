@@ -65,6 +65,8 @@ func main() {
 
 	exitWindow := false
 
+	rl.SetMasterVolume(0.2)
+
 	go func(exit *bool) {
 		for !(*exit) {
 			if state.Settings.Music {

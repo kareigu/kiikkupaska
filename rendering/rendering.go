@@ -42,6 +42,7 @@ func LoadAssets(state *utils.State) *utils.RenderingAssets {
 }
 
 func Cleanup() {
+	rl.SetTraceLog(rl.LogNone)
 	for _, t := range Assets.TileTextures {
 		rl.UnloadTexture(t)
 	}
@@ -54,6 +55,8 @@ func Cleanup() {
 	for _, t := range Assets.TestTextures.Textures {
 		rl.UnloadTexture(t)
 	}
+	rl.SetTraceLog(rl.LogInfo)
+
 	rl.UnloadFont(Assets.MainFont)
 	rl.UnloadFont(Assets.SecondaryFont)
 }
@@ -114,10 +117,12 @@ func BuildTileSet(name string) utils.TileSet {
 		in_up_left,
 	}
 
+	rl.SetTraceLog(rl.LogNone)
 	var texturelist [4096]rl.Texture2D
 	for i := 0; i < 4096; i++ {
 		texturelist[i] = rl.LoadTextureFromImage(buildTile(&parts, uint16(i)))
 	}
+	rl.SetTraceLog(rl.LogInfo)
 
 	log.Printf("%v tileset built in %v", name, time.Since(t))
 
